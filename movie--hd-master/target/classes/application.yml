@@ -1,0 +1,48 @@
+server:
+  port: 40015
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    dynamic:
+      primary: movie
+      datasource:
+        movie:
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://localhost:3306/film?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+          username: root
+#          password: root
+          password: du197312299
+          max-active: 5
+          initialSize: 3
+  jackson:
+    date-format: yyyy-MM-dd
+    time-zone: GMT+8
+  devtools:
+    restart:
+      #      设置不参与热部署的文件夹或文件  例如：static/**,config/application.yml
+      exclude:
+      #        true打开热部署，false关闭热部署
+      enabled:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+mybatis-plus:
+  global-config:
+    db-config:
+      table-prefix:
+      id-type: auto
+#打印查询日志，需要的就打开
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+logging:
+  level:
+    root: error
+  pattern:
+  file:
+    name: 模板.log
+#  logback:
+#    rollingpolicy:
+#      max-file-size: 1MB
+#      file-name-pattern: 模板.%d{yyyy-MM-dd}.%i.log
+
+
