@@ -22,7 +22,9 @@ public class UserController {
     public Object login(@RequestBody Map map) throws Exception {
         Object username = map.get("username");
         Object password = map.get("password");
-        return userService.login(username, password);
+        Object login = userService.login(username, password);
+//        System.out.println("login = " + login);
+        return login;
     }
     @ApiOperation(value = "postmb注册")
     @PostMapping("user/checkUsername")/**///postmb注册
@@ -53,6 +55,20 @@ public class UserController {
     public Object xh(@RequestBody Map map) throws Exception {
         System.out.println("map = " + map);
         return userService.xh(map);
+    }
+
+    @ApiOperation(value = "发送验证码")
+    @PostMapping("user/yzm")/**///postmb注册
+    public Object yzm(@RequestBody Map map) throws Exception {
+        System.out.println("map = " + map);
+
+        return userService.yzm(map);
+    }
+    @ApiOperation(value = "发送验证码修改密码")
+    @PostMapping("user/xgma")/**///postmb注册
+    public Object xgma(@RequestBody Map map) throws Exception {
+        System.out.println("map = " + map);
+        return userService.xgma(map);
     }
 }
 

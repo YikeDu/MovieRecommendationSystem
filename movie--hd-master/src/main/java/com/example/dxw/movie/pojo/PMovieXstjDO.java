@@ -1,6 +1,7 @@
 package com.example.dxw.movie.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -58,6 +59,10 @@ public class PMovieXstjDO implements Serializable {
     private String fz;
 
     private String timestamp;
+    @TableField(exist = false)//该字段不用映射到数据库字段进行查询
+    private Object star;
+    @TableField(exist = false)//该字段不用映射到数据库字段进行查询
+    private Object pl;
 
 
 }

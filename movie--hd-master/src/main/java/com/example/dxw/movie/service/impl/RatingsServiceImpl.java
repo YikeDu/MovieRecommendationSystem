@@ -12,9 +12,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.dxw.movie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.python.util.PythonInterpreter;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.example.dxw.movie.service.impl.Pybat.run_cmd;
 
 
 @Service
@@ -27,7 +32,6 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
     private MoviesMapper moviesMapper;
     @Autowired
     private CommentMapper commentMapper;
-
     @Autowired
     private SimUsersMapper simUsersMapper;
     @Autowired
@@ -38,48 +42,92 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
     private PMovieMapper pMovieMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private LbMapper lbMapper;
+
+    @Override
+    public Object deletM(String id) {
+        System.out.println("id = " + id);
+        int i = movieStarMapper.deleteById(id);
+
+        return null;
+    }
+
+    @Override
+    public Object getxk(String cid, String mid) {
+
+        MovieStar movieStars = movieStarMapper.selectOne(new LambdaQueryWrapper<MovieStar>()
+                .eq(MovieStar::getCid, cid).eq(MovieStar::getMovie, mid));
+        List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>().eq(Comment::getMid, mid).orderByDesc(Comment::getId));
+        LinkedHashMap<Object, Object> linkMap = new LinkedHashMap<>();
+        linkMap.put("star", movieStars);
+        linkMap.put("comments", comments);
+        return ResBean.success("成功", linkMap);
+    }
+
     @Override
     public Object getdata(String type, String cid) {
-        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getUsername,cid));
+        run_cmd("python D:\\movie\\movie--hd-master\\ucf.py");
+//        runPythonScript("\"D:\\\\movie\\\\movie--hd-master\\\\movie--hd-master\\\\ucf.py\"");
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getId, cid));
         List<RcdItem> rcdItems = rcdFilm(user);// user or user id
         System.out.println(rcdItems);
         System.out.println("type = " + type);
         System.out.println("cid = " + cid);
-        List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz,"5").last("limit 7"));
-        List<PMovieDO> pMovieDOSrm = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getRouting,"rm").last("limit 7"));
-        List<PMovieDO> pMovieDOStj = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz,"5").last("limit 7,7"));
+        String titlel = "Movies recommended based on genres you like";
+        List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7"));
 
-        if (!cid.equals("null")){
+        List<PMovieDO> pMovieDOSrm = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getRouting, "rm").last("limit 7"));
+        List<PMovieDO> pMovieDOStj = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7,7"));
+        List<PMovieDO> pMovieDOStj22 =new ArrayList<>();
+//
+        if (!cid.equals("null")) {
 
             String xh = user.getXh();
-            if (xh!=null){
+
+
+            if (xh != null) {
                 pMovieDOStj.clear();
-                if (rcdItems.size()>0){
+                if (rcdItems.size() > 0) {
+                    titlel = "Movies recommended by similar users to you";
                     for (RcdItem rcdItem : rcdItems) {
-                        String movieId = rcdItem.getMovieId()+"";
+                        String movieId = rcdItem.getMovieId() + "";
                         List<PMovieDO> pMovieDOS1 = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieId));
                         for (PMovieDO pMovieDO : pMovieDOS1) {
+                            String title = pMovieDO.getTitle();
                             pMovieDOStj.add(pMovieDO);
                         }
                     }
-                }else {
+                } else {
                     String[] split = xh.split(",");
                     for (String s : split) {
-                        List<Movies> movies = moviesMapper.selectList(new LambdaQueryWrapper<Movies>().like(Movies::getGenres,s));
+                        List<Movies> movies = moviesMapper.selectList(new LambdaQueryWrapper<Movies>().like(Movies::getGenres, s));
+                        System.out.println("movies = " + movies.size());
                         for (Movies movie : movies) {
                             List<PMovieDO> pMovieDOS1 = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movie.getMovieid()));
                             for (PMovieDO pMovieDO : pMovieDOS1) {
+                                String title = pMovieDO.getTitle();
                                 pMovieDOStj.add(pMovieDO);
                             }
                         }
                     }
                 }
-                pMovieDOStj=pMovieDOStj.subList(0,7);
+
+                for (PMovieDO pMovieDO : pMovieDOStj) {
+                    String movieid = pMovieDO.getMovieid();
+                    MovieStar movieStar = movieStarMapper.selectOne(new LambdaQueryWrapper<MovieStar>()
+                            .eq(MovieStar::getMovie,movieid).eq(MovieStar::getCid,cid).last("limit 1"));
+                    if (movieStar==null){
+                       // System.out.println("movieStar = =======================");
+                        pMovieDOStj22.add(pMovieDO);
+                    }
+                }
+                pMovieDOStj = pMovieDOStj22.subList(0, 7);
             }
         }
 
 
-        pMovieDOStj=pMovieDOStj.subList(0,7);
+        pMovieDOStj = pMovieDOStj.subList(0, 7);
         LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
         List<PMovieDO> gf = getcomments(pMovieDOS);
         List<PMovieDO> rm = getcomments(pMovieDOSrm);
@@ -87,212 +135,30 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         map.put("gf", gf);
         map.put("rm", rm);
         map.put("tj", tj);
+        map.put("title", titlel);
         return ResBean.success("ok", map);
     }
-
-//    public Object getdata1(String type, String cid) {
-//        User user = new User();
-//        user.setId(10);
-//        rcdFilm(user);// user or user id
-//        if (user != null) return null;
-//
-//        List<Object> linkedList = new LinkedList<>();
-//        List<Object> linkedList3 = new LinkedList<>();
-//        List<String> cxid = new LinkedList<>();
-//        List<Ratings> ratings = ratingsMapper.selectList(new LambdaQueryWrapper<Ratings>().eq(Ratings::getRating, 5));
-//        for (int i = 0; i < 160; i++) {
-//            Ratings ratings1 = ratings.get(i);
-//            String timestamp = ratings1.getMovieid();
-//            cxid.add(timestamp);
-//        }
-//
-//        for (int i = 0; i < cxid.size(); i++) {
-//            String timestamp = cxid.get(i);
-//            String url = "https://api.themoviedb.org/3/movie/" + timestamp + "?api_key=047cc1d00267ec4a18b7791675dc1566";
-//            String url2 = "https://api.themoviedb.org/3/movie/" + timestamp + "/recommendations?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1";
-//            String url3 = "https://api.themoviedb.org/3/movie/" + timestamp + "/similar?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1";
-//
-//            String s = "1";
-//            String s2 = "1";
-//            String s3 = "1";
-//            String mid3 = "";
-//            try {
-//
-//                s = Methods.generalGet(url);
-//                s2 = Methods.generalGet(url2);
-//                s3 = Methods.generalGet(url3);
-//
-//
-//                mid3 = s2;
-////                mid3= General.xs;
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            String mid = s;
-////            mid = General.mid;
-//
-//            String mid2 = s3;
-////            mid2 = General.tj;
-//
-//            try {
-//                List<Object> analysis = analysis(mid2);
-//                List<Object> analysis2 = analysis(mid3);
-//                Object image1 = JSONObject.parseObject(mid).get("backdrop_path");
-//                Object image2 = JSONObject.parseObject(mid).get("poster_path");
-//                Object voteCount = JSONObject.parseObject(mid).get("vote_count");
-//                Object id = JSONObject.parseObject(mid).get("id");
-//                Object runtime = JSONObject.parseObject(mid).get("runtime");
-//                String imageSrc1 = "https://image.tmdb.org/t/p/w500" + image1;
-//                String imageSrc2 = "https://image.tmdb.org/t/p/w500" + image2;
-//                Object jj = JSONObject.parseObject(mid).get("overview");
-//                Object language = JSONObject.parseObject(mid).get("original_language");
-//                Object title = JSONObject.parseObject(mid).get("original_title");
-//                String name = JSONObject.parseObject(mid).getJSONObject("belongs_to_collection").get("name").toString();
-//                Object year = JSONObject.parseObject(mid).getJSONObject("belongs_to_collection").get("id");
-//                JSONArray jsonArray = JSONObject.parseObject(mid).getJSONArray("genres");
-//                List<Object> mtypeLis = new LinkedList<>();
-//                for (Object o : jsonArray) {
-//                    Object mtype = JSONObject.parseObject(o.toString()).get("name");
-//                    mtypeLis.add(mtype);
-//                }
-//                LinkedHashMap<String, Object> map = new LinkedHashMap();
-//                map.put("id", id);
-//                map.put("movie", id);
-//                map.put("year", year);
-//                map.put("runtime", runtime);
-//                map.put("imageSrc1", imageSrc2);
-//                map.put("imageSrc2", imageSrc1);
-//                map.put("jj", jj);
-//                map.put("language", language);
-//                map.put("title", title);
-//
-//                if (name.length() > 15) {
-//                    name = name.substring(0, 15);
-//                }
-//                map.put("name", name);
-//                map.put("mtypeLis", mtypeLis);
-//                map.put("voteCount", voteCount);
-//                map.put("tj", analysis);
-//                map.put("xs", analysis2);
-//                List<Comment> comment = getComent(id.toString());
-//                map.put("comment", comment);
-//                linkedList.add(map);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        List<Object> linkedList2 = new LinkedList<>();
-////        for (int i = 0; i < linkedList.size(); i++) {
-//        if (!type.equals("no")) {
-//            for (int i = 0; i < 7; i++) {
-//                linkedList2.add(linkedList.get(i));
-//            }
-//        } else {
-//            int ii = 0;
-//            for (Object o : linkedList) {
-//                if (ii < linkedList.size()) {
-//                    if (ii < 7) {
-//                        linkedList2.add(o);
-//                        ii++;
-//                    }
-//                }
-//
-//            }
-//        }
-//        String url = "https://api.themoviedb.org/3/trending/movie/day?api_key=047cc1d00267ec4a18b7791675dc1566";
-//
-//        String s = "1";
-//        try {
-//            s = Methods.generalGet(url);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        String mid = s;
-////        mid = General.day;
-//
-//
-//        JSONArray jsonArray = JSONObject.parseObject(mid).getJSONArray("results");
-//        for (Object o : jsonArray) {
-//            String s1 = o.toString();
-//            Object id = JSONObject.parseObject(s1).get("id");
-//
-//            try {
-//                String url2 = "https://api.themoviedb.org/3/movie/" + id + "/similar?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1";
-//                String s2 = Methods.generalGet(url2);
-//                String mid2 = s2;
-////                mid2 = General.tj;
-//                String mid3 = General.xs;
-//
-//                List<Object> analysis = analysis(mid2);
-//                List<Object> analysis2 = analysis(mid3);
-//
-//                Object image1 = JSONObject.parseObject(s1).get("backdrop_path");
-//                Object image2 = JSONObject.parseObject(s1).get("poster_path");
-//                Object voteCount = JSONObject.parseObject(s1).get("vote_count");
-//
-//                Object runtime = JSONObject.parseObject(s1).get("runtime");
-//                String imageSrc1 = "https://image.tmdb.org/t/p/w500" + image1;
-//                String imageSrc2 = "https://image.tmdb.org/t/p/w500" + image2;
-//
-//                Object jj = JSONObject.parseObject(s1).get("overview");
-//                Object language = JSONObject.parseObject(s1).get("original_language");
-//                Object title = JSONObject.parseObject(s1).get("original_title");
-//                Object name = JSONObject.parseObject(s1).get("title");
-//                Object year = JSONObject.parseObject(s1).get("release_date");
-//                LinkedHashMap<String, Object> map = new LinkedHashMap();
-//                map.put("id", id);
-//                map.put("movie", id);
-//                map.put("year", year);
-//                map.put("runtime", runtime);
-//                map.put("imageSrc1", imageSrc2);
-//                map.put("imageSrc2", imageSrc1);
-//                map.put("jj", jj);
-//                map.put("language", language);
-//                map.put("title", title);
-//                map.put("name", name);
-//                map.put("tj", analysis);
-//                map.put("xs", analysis2);
-//                List<Comment> comment = getComent(id.toString());
-//                map.put("comment", comment);
-////                map.put("mtypeLis", mtypeLis);
-//                map.put("voteCount", voteCount);
-//                linkedList3.add(map);
-//            } catch (Exception e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//        List<Object> linkedList5 = new LinkedList<>();
-//        for (int i = 0; i < 7; i++) {
-//            linkedList5.add(linkedList3.get(i));
-//        }
-//        LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
-//        map.put("gf", linkedList2);
-//        map.put("gf", linkedList);
-//        map.put("rm", linkedList5);
-//        return ResBean.success("ok", map);
-//    }
 
     @Override
     public Object like(Map map) {
         Object name = map.get("name");
         List<MovieStar> movieStars = movieStarMapper.selectList(new LambdaQueryWrapper<MovieStar>().eq(MovieStar::getCid, name));
+
         return ResBean.success("ok", movieStars);
     }
 
     @Override
-    public Object getlb(String mid) {
-        return ResBean.success("成功",getcomments2(mid));
+    public Object getlb(String mid, String uid) {
+        return ResBean.success("成功", getcomments2(mid, uid));
     }
 
     @Override
     public Object getclassification(String type) {
         List<Movies> movies = moviesMapper.selectList(new LambdaQueryWrapper<Movies>().like(Movies::getGenres, type));
-        List<PMovieDO> ys=new LinkedList<>();
+        List<PMovieDO> ys = new LinkedList<>();
         for (Movies movie : movies) {
-            List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid,movie.getMovieid()));
-            if (pMovieDOS.size()>0){
+            List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movie.getMovieid()));
+            if (pMovieDOS.size() > 0) {
                 ys.add(pMovieDOS.get(0));
             }
         }
@@ -308,169 +174,26 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
                 } else {
                     linkedList2.add(linkedList.subList(i + i * toIndex, (i + 1) * toIndex));
                 }
-
             }
-        }else {
-            linkedList2=linkedList;
-        }
-
-        LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
-        map.put("sj", linkedList2);
-        map.put("cd", linkedList.size());
-        return ResBean.success("ok", map);
-    }
-    public Object getclassification1(String type) {
-        List<Object> linkedList = new LinkedList<>();
-        List<Object> linkedList3 = new LinkedList<>();
-        List<String> cxid = new LinkedList<>();
-        List<Movies> movies = moviesMapper.selectList(new LambdaQueryWrapper<Movies>().like(Movies::getGenres, type));
-        for (int i = 0; i < 160; i++) {
-            String movieid = movies.get(i).getMovieid();
-            cxid.add(movieid);
-        }
-        for (int i = 0; i < cxid.size(); i++) {
-            String timestamp = cxid.get(i);
-            String url = "https://api.themoviedb.org/3/movie/" + timestamp + "?api_key=047cc1d00267ec4a18b7791675dc1566";
-            String url2 = "https://api.themoviedb.org/3/movie/" + timestamp + "/recommendations?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1";
-
-            String s = "1";
-            String s2 = "1";
-            try {
-                s = Methods.generalGet(url);
-//                s2 = Methods.generalGet(url2);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            String mid = s;
-            String mid2 = s2;
-//            mid = General.mid;
-            mid2 = General.tj;
-            try {
-
-                String urlxs = "https://api.themoviedb.org/3/movie/" + timestamp + "/recommendations?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1";
-                String urltj = "https://api.themoviedb.org/3/movie/" + timestamp + "/similar?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1";
-
-                urlxs = Methods.generalGet(urlxs);
-                urltj = Methods.generalGet(urltj);
-                List<Object> analysis = analysis(urltj);
-                List<Object> analysis2 = analysis(urlxs);
-
-                Object image1 = JSONObject.parseObject(mid).get("backdrop_path");
-                Object image2 = JSONObject.parseObject(mid).get("poster_path");
-                Object voteCount = JSONObject.parseObject(mid).get("vote_count");
-                Object id = JSONObject.parseObject(mid).get("id");
-                List<Comment> comment = getComent(id.toString());
-                Object runtime = JSONObject.parseObject(mid).get("runtime");
-                String imageSrc1 = "https://image.tmdb.org/t/p/w500" + image1;
-                String imageSrc2 = "https://image.tmdb.org/t/p/w500" + image2;
-
-                Object jj = JSONObject.parseObject(mid).get("overview");
-                Object language = JSONObject.parseObject(mid).get("original_language");
-                Object title = JSONObject.parseObject(mid).get("original_title");
-                String name = JSONObject.parseObject(mid).getJSONObject("belongs_to_collection").get("name").toString();
-                Object year = JSONObject.parseObject(mid).getJSONObject("belongs_to_collection").get("id");
-                JSONArray jsonArray = JSONObject.parseObject(mid).getJSONArray("genres");
-                List<Object> mtypeLis = new LinkedList<>();
-                for (Object o : jsonArray) {
-                    Object mtype = JSONObject.parseObject(o.toString()).get("name");
-                    mtypeLis.add(mtype);
-                }
-                LinkedHashMap<String, Object> map = new LinkedHashMap();
-                map.put("id", id);
-                map.put("movie", id);
-                map.put("year", year);
-                map.put("runtime", runtime);
-                map.put("imageSrc1", imageSrc2);
-                map.put("imageSrc2", imageSrc1);
-                map.put("jj", jj);
-                map.put("language", language);
-                map.put("title", title);
-                map.put("tj", analysis);
-                map.put("xs", analysis2);
-                if (name.length() > 15) {
-                    name = name.substring(0, 15);
-                }
-                map.put("name", name);
-                map.put("mtypeLis", mtypeLis);
-                map.put("voteCount", voteCount);
-                map.put("comment", comment);
-                linkedList.add(map);
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-        List<Object> linkedList2 = new LinkedList<>();
-        int toIndex = 21;
-        int flag = (int) Math.ceil((double) linkedList.size() / toIndex);
-        if (linkedList.size() > 21) {
-            for (int i = 0; i < flag; i++) {
-                if (i * 21 + 21 > linkedList.size()) {
-                    linkedList2.add(linkedList.subList(i * 21, linkedList.size() - 1));
-                } else {
-                    linkedList2.add(linkedList.subList(i + i * toIndex, (i + 1) * toIndex));
-                }
-
-            }
-        }else {
-            linkedList2=linkedList;
-        }
-
-        LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
-        map.put("sj", linkedList2);
-        map.put("cd", linkedList.size());
-        return ResBean.success("ok", map);
-    }
-
-    public List<Object> analysis(String mid) {
-        LinkedList<Object> objects = new LinkedList<>();
-        JSONArray jsonArray = JSONObject.parseObject(mid).getJSONArray("results");
-        for (Object o : jsonArray) {
-            String s1 = o.toString();
-            Object image1 = JSONObject.parseObject(s1).get("backdrop_path");
-            Object image2 = JSONObject.parseObject(s1).get("poster_path");
-            Object voteCount = JSONObject.parseObject(s1).get("vote_count");
-            Object id = JSONObject.parseObject(s1).get("id");
-//            Object runtime = JSONObject.parseObject(s1).get("runtime");
-            String imageSrc1 = "https://image.tmdb.org/t/p/w500" + image1;
-            String imageSrc2 = "https://image.tmdb.org/t/p/w500" + image2;
-
-            Object jj = JSONObject.parseObject(s1).get("overview");
-            Object language = JSONObject.parseObject(s1).get("original_language");
-            String title = JSONObject.parseObject(s1).get("original_title").toString();
-            if (title.length() > 36) {
-                title = title.substring(0, 36) + "...";
-            }
-            String name = JSONObject.parseObject(s1).get("title").toString();
-            if (name.length() > 15) {
-                name = name.substring(0, 15);
-            }
-            Object year = JSONObject.parseObject(s1).get("release_date");
-            LinkedHashMap<String, Object> map = new LinkedHashMap();
-            map.put("id", id);
-            map.put("movie", id);
-            map.put("year", year);
-            map.put("runtime", "runtime");
-            map.put("imageSrc1", imageSrc2);
-            map.put("imageSrc2", imageSrc1);
-            map.put("jj", jj);
-            map.put("language", language);
-            map.put("title", title);
-            map.put("name", name);
-//                map.put("mtypeLis", mtypeLis);
-            map.put("voteCount", voteCount);
-            objects.add(map);
-        }
-        List<Object> objects1 = new LinkedList<>();
-        if (objects.size() > 6) {
-            objects1 = objects.subList(0, 7);
         } else {
-            return objects;
+            linkedList2 = linkedList;
         }
-        return objects1;
+        LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
+        map.put("sj", linkedList2);
+        map.put("cd", linkedList.size());
+        return ResBean.success("ok", map);
     }
+
+//    public void runPythonScript(String scriptPath) {
+//        PythonInterpreter interpreter = new PythonInterpreter();
+//        interpreter.execfile(scriptPath);
+//    }
+//    public  void runPython(){
+//            PythonInterpreter interpreter = new PythonInterpreter();
+//            interpreter.execfile("D:\\movie\\movie--hd-master\\movie--hd-master\\ucf.py");
+//
+//    }
+
 
     public List<Comment> getComent(String movid) {
         List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>().eq(Comment::getMid, movid));
@@ -479,6 +202,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 
     // todo 个性化推荐，如果返回空，推荐用户选择的类型对应最热门电影
     public List<RcdItem> rcdFilm(User user) {
+        List<RcdItem> entries22 = new ArrayList<>();
 
         if (user == null || user.getId() <= 0) return Collections.emptyList();
 
@@ -488,8 +212,10 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         SimUser simUsers = simUsersMapper.selectOne(new LambdaQueryWrapper<SimUser>().eq(SimUser::getUserId, user.getId()));
 
         //System.out.println(simUsers);
-        if (simUsers == null ||  simUsers.getSimUser() == null) return Collections.emptyList();
-
+        if (simUsers == null || simUsers.getSimUser() == null) return Collections.emptyList();
+        if (simUsers.getSimUser() == null || simUsers.getSimUser().equals("")) {
+            return entries22;
+        }
         String[] sims = simUsers.getSimUser().split(",");
         // <sim_user_id, sim_score>
         Map<Integer, Double> simUsersMap = new HashMap<>();
@@ -504,31 +230,31 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         List<Map.Entry<Integer, Double>> entryList = new ArrayList<>(simUsersMap.entrySet());
         entryList.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
-        //System.out.println(entryList);// sim user
+        System.out.println(entryList);// sim user
 
         int topN = Math.min(50, entryList.size());// topN of sim users
         entryList = entryList.subList(0, topN);
 
         // sim user id
         List<Integer> simUserIds = entryList.stream().map(Map.Entry::getKey).collect(Collectors.toList());
-       // System.out.println(simUserIds);
+        System.out.println(simUserIds);
         // fetch me ratings
         List<RatingsNorm> meRatings = ratingsNormMapper.selectList(new LambdaQueryWrapper<RatingsNorm>().eq(RatingsNorm::getUserId, user.getId()));
-       // System.out.println(meRatings);
+        // System.out.println(meRatings);
         // fetch sim user ratings
 
         List<RatingsNorm> ratings = new ArrayList<>();
-            int sim = simUserIds.size();
-            for (int i = 0; i < sim; i++) {
-                int x = simUserIds.get(i);
-                List<RatingsNorm> rating = ratingsNormMapper.selectList(new LambdaQueryWrapper<RatingsNorm>().eq(RatingsNorm::getUserId, x));
-               // System.out.println(rating);
-                ratings.addAll(rating);
-                //System.out.println(ratings);
-            }
+        int sim = simUserIds.size();
+        for (int i = 0; i < sim; i++) {
+            int x = simUserIds.get(i);
+            List<RatingsNorm> rating = ratingsNormMapper.selectList(new LambdaQueryWrapper<RatingsNorm>().eq(RatingsNorm::getUserId, x));
+            // System.out.println(rating);
+            ratings.addAll(rating);
+            //System.out.println(ratings);
+        }
 //        List<RatingsNorm> ratings = ratingsNormMapper.selectList(new LambdaQueryWrapper<RatingsNorm>().eq(RatingsNorm::getUserId, simUserIds));
         //System.out.println("===================================");
-       // System.out.println(ratings);
+        // System.out.println(ratings);
         // rcd
         Map<Integer, RcdItem> rcdItemMap = getRcdItem(meRatings, ratings, simUsersMap);
         //System.out.println(rcdItemMap);
@@ -537,7 +263,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
                 .collect(Collectors.toList());
 
         for (RcdItem rcdItem : entries) {// rcd item
-           System.out.println(rcdItem);
+            //System.out.println(rcdItem);
             rcdItems.add(rcdItem);
         }
         System.out.println(rcdItems);
@@ -554,7 +280,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         }
 
         for (RatingsNorm r : ratings) {
-         // if (mIds.contains(r.getMovie_id())) continue;// 我看过，不要
+            if (mIds.contains(r.getMovieId())) continue;// 我看过，不要
 
             double score = r.getRating() * simUsersMap.get(r.getUserId());// rating * sim_score
             ret.computeIfAbsent(r.getMovieId(), RcdItem::new).inc(score);
@@ -563,14 +289,16 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         return ret;
     }
 
-    class RcdItem{
+    class RcdItem {
         private long movieId;
         private int count;
         private double score;
         private double fScore;
+
         public long getMovieId() {
             return movieId;
         }
+
         public RcdItem(long movieId) {
             this.movieId = movieId;
             this.count = 0;
@@ -595,29 +323,145 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
                     '}';
         }
     }
-    public List<PMovieDO> getcomments(List<PMovieDO> pMovieDOS){
+
+    public List<PMovieDO> getcomments(List<PMovieDO> pMovieDOS) {
         for (PMovieDO pMovieDO : pMovieDOS) {
             String movieid = pMovieDO.getMovieid();
             List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>().eq(Comment::getMid, movieid));
 //            List<PMovieXstjDO> pMovieXstjDOS = pMovieXstjMapper.selectList(new LambdaQueryWrapper<PMovieXstjDO>().eq(PMovieXstjDO::getTj,movieid).last("limit 7"));
 //            List<PMovieXstjDO> pMovieXstjDOS2 = pMovieXstjMapper.selectList(new LambdaQueryWrapper<PMovieXstjDO>().eq(PMovieXstjDO::getTj,movieid).orderByDesc(PMovieXstjDO::getId).last("limit 7"));
+
+            String title = pMovieDO.getTitle();
+            if (title.length() > 17) {
+                pMovieDO.setTitle(title.substring(0, 17) + "...");
+            }
+            String mid = pMovieDO.getMovieid();
+            String pj = "https://image.tmdb.org/t/p/w500";
+            String imageSrc2 = pMovieDO.getImageSrc2();
+            String imageSrc1 = pMovieDO.getImageSrc1();
+            pMovieDO.setImageSrc1(pj + imageSrc2);
+            pMovieDO.setImageSrc2(pj + imageSrc1);
+            pMovieDO.setYear(mid);
             pMovieDO.setComment(comments);
+            String[] mtypeLis = pMovieDO.getMtypeLis().split(",");
+            String lb = "";
+            for (String mtypeLi : mtypeLis) {
+                LbDO lbDO = lbMapper.selectOne(new LambdaQueryWrapper<LbDO>().eq(LbDO::getLid, mtypeLi).last("limit 1"));
+                if (lbDO != null) {
+                    String name = lbDO.getName();
+                    lb += name + ",";
+                }
+            }
+            pMovieDO.setMtypeLis(lb);
+            pMovieDO.setVoteCount("-");
 //            pMovieDO.setTj(pMovieXstjDOS);
 //            pMovieDO.setXs(pMovieXstjDOS2);
         }
+
         return pMovieDOS;
     }
-    public Object getcomments2( String movieid ){
+
+    public Object getcomments2(String movieid, String uid) {
+        List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>().eq(Comment::getMid, movieid));
+        PMovieDO pMovieDO = pMovieMapper.selectOne(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid).last("limit 1"));
+        String[] xs = pMovieDO.getXs().split(",");
+        String[] tj = pMovieDO.getTj().split(",");
+        List<PMovieXstjDO> pMovieXstjDOS = new ArrayList<>();
+        List<PMovieXstjDO> pMovieXstjDOS2 = new ArrayList<>();
+        int j1 = 0;
+        int j2 = 0;
+        for (String x : xs) {
+            PMovieXstjDO pMovieXstjDO = pMovieXstjMapper.selectOne(new LambdaQueryWrapper<PMovieXstjDO>().eq(PMovieXstjDO::getMovieid, x).last("limit 1"));
+            if (pMovieXstjDO != null && j1 < 7) {
+                String pj = "https://image.tmdb.org/t/p/w500";
+                String imageSrc2 = pMovieXstjDO.getImageSrc2();
+                String imageSrc1 = pMovieXstjDO.getImageSrc1();
+                if (!imageSrc2.equals("") && !imageSrc1.equals("")) {
+                    pMovieXstjDO.setImageSrc1(pj + imageSrc2);
+                    pMovieXstjDO.setImageSrc2(pj + imageSrc1);
+                    String[] mtypeLis = pMovieXstjDO.getMtypeLis().split(",");
+                    String lb = "";
+                    for (String mtypeLi : mtypeLis) {
+                        LbDO lbDO = lbMapper.selectOne(new LambdaQueryWrapper<LbDO>().eq(LbDO::getLid, mtypeLi).last("limit 1"));
+                        if (lbDO != null) {
+                            String name = lbDO.getName();
+                            lb += name + ",";
+                        }
+                    }
+                    if (lb.equals("")) {
+                        lb = "-";
+                    }
+                    pMovieXstjDO.setMtypeLis(lb);
+                    String jj = pMovieXstjDO.getJj();
+                    try {
+                        String decode = URLDecoder.decode(jj, "UTF-8");
+                        pMovieXstjDO.setJj(decode);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    pMovieXstjDOS.add(pMovieXstjDO);
+                    j1++;
+                }
+            }
+        }
+        for (String x : tj) {
+            PMovieXstjDO pMovieXstjDO = pMovieXstjMapper.selectOne(new LambdaQueryWrapper<PMovieXstjDO>().eq(PMovieXstjDO::getMovieid, x).last("limit 1"));
+            if (pMovieXstjDO != null && j2 < 7) {
+                String pj = "https://image.tmdb.org/t/p/w500";
+                String imageSrc2 = pMovieXstjDO.getImageSrc2();
+                String imageSrc1 = pMovieXstjDO.getImageSrc1();
+                if (!imageSrc2.equals("") && !imageSrc1.equals("")) {
+                    pMovieXstjDO.setImageSrc1(pj + imageSrc2);
+                    pMovieXstjDO.setImageSrc2(pj + imageSrc1);
+                    String[] mtypeLis = pMovieXstjDO.getMtypeLis().split(",");
+                    String lb = "";
+                    for (String mtypeLi : mtypeLis) {
+                        LbDO lbDO = lbMapper.selectOne(new LambdaQueryWrapper<LbDO>().eq(LbDO::getLid, mtypeLi).last("limit 1"));
+                        if (lbDO != null) {
+                            String name = lbDO.getName();
+                            lb += name + ",";
+                        }
+                    }
+                    if (lb.equals("")) {
+                        lb = "-";
+                    }
+                    pMovieXstjDO.setMtypeLis(lb);
+                    pMovieXstjDOS2.add(pMovieXstjDO);
+                    j2++;
+                }
+            }
+        }
 
 
-            List<Comment> comments = commentMapper.selectList(new LambdaQueryWrapper<Comment>().eq(Comment::getMid, movieid));
-            List<PMovieXstjDO> pMovieXstjDOS = pMovieXstjMapper.selectList(new LambdaQueryWrapper<PMovieXstjDO>().eq(PMovieXstjDO::getTj,movieid).last("limit 7"));
-            List<PMovieXstjDO> pMovieXstjDOS2 = pMovieXstjMapper.selectList(new LambdaQueryWrapper<PMovieXstjDO>().eq(PMovieXstjDO::getTj,movieid).orderByDesc(PMovieXstjDO::getId).last("limit 7"));
         LinkedHashMap<Object, Object> map = new LinkedHashMap<>();
-        map.put("tj",pMovieXstjDOS);
-        map.put("pl",comments);
-        map.put("xs",pMovieXstjDOS2);
+        List<MovieStar> movieStars = movieStarMapper.selectList(new LambdaQueryWrapper<MovieStar>()
+                .eq(MovieStar::getMovie, movieid).eq(MovieStar::getCid, uid).orderByDesc(MovieStar::getId));
+        String star = "0";
+        if (movieStars.size() > 0) {
+            MovieStar movieStar = movieStars.get(0);
+            star = movieStar.getStar();
+            System.out.println("movieStars = " + movieStar.getStar());
+        }
+
+
+        map.put("tj", title(pMovieXstjDOS));
+        map.put("pl", comments);
+        map.put("xs", title(pMovieXstjDOS2));
+        map.put("star", star);
         return map;
+    }
+
+    public List<PMovieXstjDO> title(List<PMovieXstjDO> list) {
+        for (PMovieXstjDO pMovieXstjDO : list) {
+            String title = pMovieXstjDO.getTitle();
+            String movieid = pMovieXstjDO.getMovieid();
+            pMovieXstjDO.setYear(movieid);
+            if (title.length() > 17) {
+                pMovieXstjDO.setTitle(title.substring(0, 17) + "...");
+            }
+        }
+        return list;
     }
 
 }

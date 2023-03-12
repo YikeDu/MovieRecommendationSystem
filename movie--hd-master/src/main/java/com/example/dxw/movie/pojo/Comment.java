@@ -12,7 +12,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 public class Comment implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
@@ -21,6 +21,7 @@ public class Comment implements Serializable {
      * 电影唯一标识
      */
     private String mid;
+    private String uid;
 
     /**
      * 评论人工号

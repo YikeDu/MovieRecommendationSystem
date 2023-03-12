@@ -23,4 +23,7 @@ public interface UserService extends IService<User> {
     Object deleteU(Map map);
 
     Object xh(Map map);
+    Object yzm(Map map);
+
+    Object xgma(Map map);
 }

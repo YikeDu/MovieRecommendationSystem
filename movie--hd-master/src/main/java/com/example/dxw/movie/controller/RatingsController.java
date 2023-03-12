@@ -45,9 +45,9 @@ public class RatingsController {
 //    private RatingsService ratingsService;
     @ApiOperation(value = "postmb模板")
     @GetMapping("lb")/**///postmb模板
-    public Object lb(String mid) throws Exception {
+    public Object lb(String mid,String uid) throws Exception {
 
-        return ratingsService.getlb(mid);
+        return ratingsService.getlb(mid,uid);
     }
 
     @ApiOperation(value = "classification页面加载数据")
@@ -65,6 +65,7 @@ public class RatingsController {
     @ApiOperation(value = "jsData接受点赞的数据")
     @PostMapping("jsData")/**///postmb模板
     public Object jsData(@RequestBody Map map) throws Exception {
+        System.out.println("map = " + map);
         movieStarService.inert(map);
         return null;
     }
@@ -73,6 +74,12 @@ public class RatingsController {
     @PostMapping("like")/**///getdata返回前端数据
     public Object like(@RequestBody Map map) throws Exception {
         return ratingsService.like(map);
+    }
+
+    @ApiOperation(value = "删除喜欢数据", notes = "")
+    @GetMapping("deletM")//
+    public Object deletM(String id) throws Exception {
+        return ratingsService.deletM(id);
     }
 
     @ApiOperation(value = "评论数据")
@@ -85,6 +92,7 @@ public class RatingsController {
     @ApiOperation(value = "页面加载喜好数据数据!!")
     @GetMapping("getxh")/**///getmb模板
     public Object getxh(String cid) throws Exception {
+        String pj ="https://image.tmdb.org/t/p/w500";
         List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getUsername, cid));
         LinkedList<Object> xz = new LinkedList<>();
         LinkedHashMap<Object, Object> map3 = new LinkedHashMap<>();
@@ -125,13 +133,13 @@ public class RatingsController {
                     LinkedHashMap<Object, Object> map1 = new LinkedHashMap<>();
                     List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid));
                     PMovieDO pMovieDO = pMovieDOS.get(0);
-                    map1.put("url", pMovieDO.getImageSrc1());
+
+                    map1.put("url", pj+pMovieDO.getImageSrc2());
                     map1.put("name", pMovieDO.getName());
                     map1.put("title", key);
                     Object o = map3.get(key);
                     if (o != null) {
                         map1.put("color", "red");
-
                     } else {
                         map1.put("color", "#66B1FF");
                     }
@@ -146,7 +154,8 @@ public class RatingsController {
                         LinkedHashMap<Object, Object> map1 = new LinkedHashMap<>();
                         List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid));
                         PMovieDO pMovieDO = pMovieDOS.get(0);
-                        map1.put("url", pMovieDO.getImageSrc1());
+
+                        map1.put("url",pj+ pMovieDO.getImageSrc2());
                         map1.put("name", pMovieDO.getName());
                         map1.put("title", key);
                         Object o = map3.get(key);
@@ -168,7 +177,7 @@ public class RatingsController {
                             LinkedHashMap<Object, Object> map1 = new LinkedHashMap<>();
                             List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid));
                             PMovieDO pMovieDO = pMovieDOS.get(0);
-                            map1.put("url", pMovieDO.getImageSrc1());
+                            map1.put("url",pj+ pMovieDO.getImageSrc2());
                             map1.put("name", pMovieDO.getName());
                             map1.put("title", key);
                             Object o = map3.get(key);
@@ -188,6 +197,12 @@ public class RatingsController {
         map1.put("types", objects);
         map1.put("xz", xz);
         return ResBean.success("成功", map1);
+    }
+    @ApiOperation(value = "新开页面的打分数据和评论数据!!")
+    @GetMapping("getxk")/**///getmb模板
+    public Object getxk(String cid,String mid) throws Exception {
+
+        return ratingsService.getxk(cid,mid);
     }
 }
 

@@ -27,8 +27,11 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
     public void inert(Map map) {
         System.out.println(map);
         Integer id = Integer.valueOf(map.get("id").toString());
+        Integer moveid = Integer.valueOf(map.get("movieid").toString());
+        Integer uid = Integer.valueOf(map.get("uid").toString());
         String star = map.get("star").toString();
-        String cid = map.get("cid").toString();
+//        String cid = map.get("cid").toString();
+        String cid = uid+"";
         System.out.println("cid:"+cid);
 //        String mid = map.get("mid").toString();
         String year = map.get("year").toString();
@@ -56,7 +59,7 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
             movieStar.setStar(star);
             movieStar.setDatas(datas);
             movieStar.setMid(id.toString());
-            movieStar.setMovie(id.toString());
+            movieStar.setMovie(moveid+"");
             movieStar.setYear(year);
 //            movieStar.setRuntime(runtime);
             movieStar.setImagesrc1(imageSrc1);
@@ -74,7 +77,8 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
         Ratings ratings = new Ratings();
         Ratings ratings2 = ratings1.get(0);
         ratings.setIndexl(ratings2.getId()+"");
-        ratings.setUserid(cid);
+        ratings.setUserid(uid+"");
+//        ratings.setUserid(cid);
         ratings.setMovieid(movieid);
         ratings.setRating(Integer.valueOf(star));
         ratings.setTimestamp(id.toString());

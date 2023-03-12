@@ -50,9 +50,9 @@ public class PMovieDO implements Serializable {
 
     private String voteCount;
 
-    private Object tj;
+    private String tj;
 
-    private Object xs;
+    private String xs;
 
     private String hearf;
 

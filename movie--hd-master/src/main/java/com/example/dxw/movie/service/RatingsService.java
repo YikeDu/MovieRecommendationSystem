@@ -17,5 +17,9 @@ public interface RatingsService extends IService<Ratings> {
 
     Object getclassification(String type);
 
-    Object getlb(String mid);
+    Object getlb(String mid,String uid);
+
+    Object deletM(String id);
+
+    Object getxk(String cid, String mid);
 }
