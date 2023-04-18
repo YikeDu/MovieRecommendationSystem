@@ -64,65 +64,71 @@ export default {
       },
       rules: {
         username: [
-          {validator: validateUsername, trigger: 'blur'},
+          // {validator: validateUsername, trigger: 'blur'},
           {required: true, message: 'Please input username', trigger: 'blur'},
           {min: 4, max: 32, message: 'Length limited from 4 to 32 characters', trigger: 'blur'}
         ],
         email: [
-          {validator: validateEmail, trigger: 'blur'},
+          // {validator: validateEmail, trigger: 'blur'},
           {required: true, message: 'Please input email', trigger: 'blur'},
-          {min: 4, max: 32, message: 'Length limited from 4 to 64 characters', trigger: 'blur'}
+          {pattern: /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$/, message: 'Mailbox format error', trigger: 'blur'}
+          // {min: 4, max: 32, message: 'Length limited from 4 to 64 characters', trigger: 'blur'}
         ],
         password: [
           {required: true, message: 'Please input password', trigger: 'blur'},
-          {min: 8, max: 32, message: 'Length limited from 8 to 32 characters', trigger: 'blur'}
+          {min: 4, max: 32, message: 'Length limited from 8 to 32 characters', trigger: 'blur'}
         ]
       }
     }
   },
   methods: {
     async submitForm(formName) {
+
       var vm = this
-      var form = this.ruleForm
-      console.log(form);
-      const {data: res} = await this.$http.post("/api/user/checkUsername", this.ruleForm);
-      // this.movieList = res.obj;
-      console.log("res", res)
-      if (res.code == 200) {
-        // this.$router.push("/login");
-        const { data: res2 } = await this.$http.post("/api/user/login", this.ruleForm);
-        window.sessionStorage.setItem("token", this.ruleForm.username);
-        window.sessionStorage.setItem("user", JSON.stringify(res2.obj));
-        bus.$emit("login", res2.obj);
-        this.$router.push("/like2");
-        return this.$message.success(res.message);
-      } else {
-        this.$message.error(res.message);
-      }
 
 
-      // this.$refs[formName].validate((valid) => {
-      //     if (valid) {
 
-      //         // axios
-      //         //     .post('/api/user/signup', form)
-      //         //     .then(function (response) {
-      //         //         console.log(response);
-      //         //         if (response.data.code == 0) {
-      //         //             vm.$message({
-      //         //                 message: 'Signup Success!',
-      //         //                 type: 'success'
-      //         //             })
-      //         //             vm.$router.push({ path: '/login' })
-      //         //         } else {
-      //         //             vm.$message({
-      //         //                 message: 'Signup Error!',
-      //         //                 type: 'error'
-      //         //             })
-      //         //         }
-      //         //     })
-      //     }
-      // })
+      this.$refs[formName].validate(async (valid) => {
+        console.log("valid", valid);
+        if (valid){
+          var form = this.ruleForm
+
+          const {data: res} = await this.$http.post("/api/user/checkUsername", this.ruleForm);
+          // this.movieList = res.obj;
+
+          if (res.code == 200) {
+            // this.$router.push("/login");
+            const { data: res2 } = await this.$http.post("/api/user/login", this.ruleForm);
+            window.sessionStorage.setItem("token", this.ruleForm.username);
+            window.sessionStorage.setItem("user", JSON.stringify(res2.obj));
+            bus.$emit("login", res2.obj);
+            this.$router.push("/like2");
+            return this.$message.success(res.message);
+          } else {
+            this.$message.error(res.message);
+          }
+        }
+          // if (valid) {
+
+              // axios
+              //     .post('/api/user/signup', form)
+              //     .then(function (response) {
+              //         console.log(response);
+              //         if (response.data.code == 0) {
+              //             vm.$message({
+              //                 message: 'Signup Success!',
+              //                 type: 'success'
+              //             })
+              //             vm.$router.push({ path: '/login' })
+              //         } else {
+              //             vm.$message({
+              //                 message: 'Signup Error!',
+              //                 type: 'error'
+              //             })
+              //         }
+              //     })
+          // }
+      })
     }
   }
 }
