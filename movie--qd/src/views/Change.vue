@@ -39,6 +39,9 @@
         <div> <span class="title">Change your password</span></div>
         <br>
         <el-form :label-position="labelPosition" label-width="140px" :model="formLabelAlign">
+          <el-form-item label="Original password">
+            <el-input v-model="formLabelAlign.oPassword"></el-input>
+          </el-form-item>
           <el-form-item label="Password">
             <el-input v-model="formLabelAlign.Password"></el-input>
           </el-form-item>
@@ -74,6 +77,7 @@ export default {
         Email: "",
         UserName: "",
         Password: "",
+        oPassword: "",
         Retype: "",
         id: "",
 
@@ -100,11 +104,23 @@ export default {
     },
     async UpdateU() {
       const { data: res } = await this.$http.post("/api/user/UpdateU", this.formLabelAlign);
-      this.jumplogin()
+      if (res.code==200){
+        this.jumplogin()
+      }else {
+        this.$message.error(res.message);
+      }
     },
     async UpdateP() {
+      if (this.formLabelAlign.Password!=this.formLabelAlign.Retype){
+        this.$message.error("两次输入的密码不一样");
+        return;
+      }
       const { data: res } = await this.$http.post("/api/user/UpdateP", this.formLabelAlign);
-      this.jumplogin()
+      if (res.code==200){
+        this.jumplogin()
+      }else {
+        this.$message.error(res.message);
+      }
     },
     async deleteU() {
       const { data: res } = await this.$http.post("/api/user/deleteU", this.formLabelAlign);
@@ -163,7 +179,7 @@ li {
   align-items: center;
 
   .rght_box2 {
-    margin-top: 10px;
+    margin-top: 60px;
     padding-left: 50px;
   }
 }
@@ -174,5 +190,6 @@ a {
 
 .title {
   font-size: 50px;
+  margin-top: 20px;
 }
 </style>

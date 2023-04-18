@@ -4,7 +4,7 @@
       <div class="centero"><span>历史评分区</span></div>
     </div>
     <div class="content">
-      <div class="content_movie" v-for="item in movieList" :index="item" :key="item" @click="omovie(item)">
+      <div class="content_movie" v-for="(item ,index) of movieList" :index="item" :key="index" >
         <div>
           <div class="category">
             <div class="box_white">
@@ -22,6 +22,9 @@
                   <div class="category_jj" style="width: 500px">
                     {{ item.jj }}
                   </div>
+                </div>
+                <div style="float: right;margin-left: 50px">
+                  <el-button type="danger" @click="deletM(item)">删除</el-button>
                 </div>
               </div>
             </div>
@@ -45,13 +48,26 @@ export default {
     this.init();
   },
   methods: {
+    async deletM(v) {
+      console.log("deletM", v)
+      const {data: res} = await this.$http.get("/api/ratings/deletM?id="+v.id);
+      this.init()
+    },
+    async starf() {
+      console.log(this.star);
+
+    },
     async init() {
       console.log(this.star);
-      const tokenStr = window.sessionStorage.getItem('token')
-      const { data: res } = await this.$http.post("/api/ratings/like", {
+      const tokenStr = window.sessionStorage.getItem('uid')
+      const {data: res} = await this.$http.post("/api/ratings/like", {
         name: tokenStr,
       });
       this.movieList = res.obj;
+      this.movieList.forEach(item=>{
+        let a=parseInt(item.star)
+        item.star=a;
+      })
       console.log(this.movieList);
     },
     youlike() {
@@ -59,7 +75,7 @@ export default {
     },
     omovie(val) {
       console.log(val);
-      this.$router.push("/mdetails");
+      // this.$router.push("/mdetails");
       //   mdetails
     },
     category_rightf() {

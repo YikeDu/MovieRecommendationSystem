@@ -1,30 +1,67 @@
 <template>
-  <el-container class="app">
-    <el-header>
-      <Header />
-    </el-header>
-    <router-view class="view" />
-    <el-footer />
-  </el-container>
+  <div id="app">
+    <router-view></router-view>
+  </div>
 </template>
 <script>
-import Header from "./components/header.vue";
 export default {
-  name: "App",
+  name: "HomeApp",
   components: {
-    Header,
+  },
+  mounted () {
+    this.init();
+  },
+  methods: {
+    init () {
+      this.initContentSize();
+    },
+    initContentSize () {
+      this.$nextTick(() => {
+        this.setSize();
+        window.onresize = () => {
+          this.setSize();
+        };
+      });
+    },
+    setSize () {
+      let app = document.getElementById("app");
+      app.style.height = window.innerHeight + "px";
+    },
   },
 };
 </script>
-<style lang="css" scoped>
-.app {
-  /* background: #ffffff; */
-  background: #f1f1f1;
-  font-family: "arial", "times", "courier";
-  min-height: 920px;
+
+<style lang="less" >
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  // text-align: center;
+  color: #2c3e50;
+  height: 100%;
 }
 
-.view {
-  padding-top: 30px;
+ html,
+ body {
+   margin: 0;
+   padding: 0;
+   height: 100%;
+   height: 100%;
+ }
+
+.myhome {
+  height: 100%;
+  width: 100%;
+}
+.el-menu--collapse .el-menu .el-submenu, .el-menu--popup{
+  min-width: 130px!important;
+  //background-color: #bd2c00!important;
+  position: relative;
+  left: -34px;
+}
+/deep/ .el-popover{
+  padding: 0px!important;
+  //margin-top: 20px;
 }
 </style>
+

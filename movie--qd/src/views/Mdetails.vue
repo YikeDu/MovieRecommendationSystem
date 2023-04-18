@@ -85,9 +85,9 @@
       <div style=" color: #0CDAEB;font-size: 1.2rem;margin-bottom: 10px;"> Similar Movies</div>
       <div class="content" v-if="statusl">
         <div class="content_movie" v-for="item in tj" :index="item" :key="item" @click="omovie(item)">
-          <div style="width: 156px; height: 320px">
+          <div style="width: 156px; height: 320px" >
             <el-image style="width: 156px; height: 228px" :src="item.imageSrc1" :fit="fit"></el-image>
-            <div style="width: 156px; margin-bottom: 10px; height: 50px">
+            <div style="width: 156px; margin-bottom: 10px; height: 15px">
               <span style="font-size: 1rem">{{ item.title }}</span>
             </div>
             <div style="width: 156px; margin-top: 5px; height: 15px">
@@ -103,7 +103,7 @@
         <div class="content_movie" v-for="item in xs" :index="item" :key="item" @click="omovie(item)">
           <div style="width: 156px; height: 320px">
             <el-image style="width: 156px; height: 228px" :src="item.imageSrc1" :fit="fit"></el-image>
-            <div style="width: 156px; margin-bottom: 10px; height: 50px">
+            <div style="width: 156px; margin-bottom: 10px; height: 15px">
               <span style="font-size: 1rem">{{ item.title }}</span>
             </div>
             <div style="width: 156px; margin-top: 5px; height: 15px">
@@ -132,7 +132,8 @@ export default {
       statusl: true,
       // comment: [{ cid: "zhangsan", cTimeStr: "2022-11-07 11:80", cStr: "评论内容" }, { cid: "李四", cTimeStr: "2022-11-07 11:80", cStr: "评论内容" }],
       comment: [],
-      movieid: ""
+      movieid: "",
+      sjs:''
 
     };
   },
@@ -153,16 +154,37 @@ export default {
       }
     });
   },
+  beforeDestroy() {
+    this.send();
+  },
   mounted() {
     this.gettjxs()
 
   },
   methods: {
+    omovie(v){
+      console.log("这里是打印", v);
+      // this.sj=v
+      // this.comment = v.comment;
+      // this.movieid = v.movieid;
+      // this.star = v.star;
+      this.sjs = v;
+      this.sjs.names = this.cid;
+      console.log("这里是打印",this.sjs );
+
+      this.$router.push("/mdetails2");
+    },
+    send() {
+      bus.$emit("xgg", this.sjs);
+    },
     async gettjxs() {
-      const {data: res} = await this.$http.get("/api/ratings/lb?mid="+this.movieid);
+      let uid = window.sessionStorage.getItem('uid');
+      const {data: res} = await this.$http.get("/api/ratings/lb?mid="+this.movieid+"&uid="+uid);
+      console.log('123',res)
       this.tj = res.obj.tj;
       this.xs = res.obj.xs;
-      console.log(res)
+      this.star = res.obj.star;
+
     },
     async sumbit() {
       console.log(this.firstComments);
@@ -194,6 +216,7 @@ export default {
       if (tokenStr) {
         this.sj.star = this.star;
         this.sj.cid = tokenStr;
+        this.sj.uid = window.sessionStorage.getItem('uid');
         const {data: res} = await this.$http.post("/api/ratings/jsData", this.sj);
         this.$message.success("Thank you for your participation. Score success:" + this.star + "Mark");
       } else {
