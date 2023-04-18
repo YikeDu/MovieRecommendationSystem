@@ -6,11 +6,9 @@
                 </el-alert>
             </el-col>
         </el-row>
-
         <el-row type="flex" align="center" justify="center">
             <el-button type="primary" @click="logout()">Logout</el-button>
         </el-row>
-
     </el-main>
 </template>
 <script>

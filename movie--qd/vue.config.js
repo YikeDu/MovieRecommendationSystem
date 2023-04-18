@@ -1,11 +1,31 @@
+const { defineConfig } = require('@vue/cli-service')
+module.exports = defineConfig({
+  transpileDependencies: true,
+
+})
+
 module.exports = {
-    devServer: {
-        host: 'localhost',
-        port: 38388,
-        proxy: {
-            '/': {
-                target: 'http://localhost:40015'
-            }
+  devServer: {
+    port: 8088,
+    proxy: {
+      "/": {
+        target: 'http://localhost:40015',
+        ws: false,
+        origin: true,
+        pathRewrite: {
+          "^/": "/"
         }
+      }
     }
-};
+  },
+  pages: {
+    index: {
+      entry: 'src/main.js',
+      filename: 'index.html',
+      template: 'public/index.html',
+      title: '后台管理系统',
+      chunks: ['chunk-vendors', 'chunk-common', 'index']
+    }
+  }
+
+}

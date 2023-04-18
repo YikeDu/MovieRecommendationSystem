@@ -1,5 +1,8 @@
 <template>
   <div class="Box">
+    <div>
+      <Header></Header>
+    </div>
     <div class="category">
       <div class="hn">
         <span style="font-size: 1.5rem; margin-right: 100px" @click="category_rightf">Genre of film</span>
@@ -20,14 +23,14 @@
       </div>
     </div>
     <div class="content" v-if="statusl">
-      <div style="color: #0CDAEB;font-size: 1.2rem; margin-bottom: 10px;">Recommend</div>
+      <div style="color: #0CDAEB;font-size: 1.2rem; margin-bottom: 10px;">{{ liketitle }}</div>
       <div class="content_movie" v-for="item in tj" :index="item.id" :key="item.id" @click="omovie(item)">
-        <div style="width: 156px; height: 320px">
+        <div style="width: 156px; height: 270px">
           <el-image style="width: 156px; height: 228px" :src="item.imageSrc1" :fit="fit"></el-image>
-          <div style="width: 156px; margin-bottom: 10px; height: 50px">
+          <div style="width: 156px;">
             <span style="font-size: 1rem">{{ item.title }}</span>
           </div>
-          <div style="width: 156px; margin-top: 5px; height: 15px">
+          <div style="width: 156px; margin-top: 15px; height: 15px">
             <span style="font-size: 1rem">{{ item.year }}</span>
           </div>
         </div>
@@ -36,12 +39,12 @@
     <div class="content" v-if="statusl">
       <div style="color: #0CDAEB;font-size: 1.2rem; margin-bottom: 10px;">Weekly Trending</div>
       <div class="content_movie" v-for="item in rm" :index="item.id" :key="item.id" @click="omovie(item)">
-        <div style="width: 156px; height: 320px">
+        <div style="width: 156px;  vertical-align: middle; height: 270px">
           <el-image style="width: 156px; height: 228px" :src="item.imageSrc1" :fit="fit"></el-image>
-          <div style="width: 156px; margin-bottom: 10px; height: 50px">
+          <div style="width: 156px; margin-bottom: 10px; ">
             <span style="font-size: 1rem">{{ item.title }}</span>
           </div>
-          <div style="width: 156px; margin-top: 5px; height: 15px">
+          <div style="width: 156px; margin-top: 15px; height: 15px">
             <span style="font-size: 1rem">{{ item.year }}</span>
           </div>
         </div>
@@ -50,12 +53,12 @@
     <div class="content" v-if="statusl">
       <div style="  color: #0CDAEB;font-size: 1.2rem;margin-bottom: 10px;">Top Rated</div>
       <div class="content_movie" v-for="item in gf" :index="item.id" :key="item.id" @click="omovie(item)">
-        <div style="width: 156px; height: 320px">
+        <div style="width: 156px;">
           <el-image style="width: 156px; height: 228px" :src="item.imageSrc1" :fit="fit"></el-image>
-          <div style="width: 156px; margin-bottom: 10px; height: 50px">
+          <div style="width: 156px; margin-bottom: 10px; ">
             <span style="font-size: 1rem">{{ item.title }}</span>
           </div>
-          <div style="width: 156px; margin-top: 5px; height: 15px">
+          <div style="width: 156px; margin-top: 15px; height: 15px">
             <span style="font-size: 1rem">{{ item.year }}</span>
           </div>
         </div>
@@ -76,7 +79,7 @@
       <div class="block">
         <span class="demonstration"></span>
         <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-          :current-page.sync="currentPage1" :page-size="21" layout="total, prev, pager, next" :total=total>
+                       :current-page.sync="currentPage1" :page-size="21" layout="total, prev, pager, next" :total=total>
         </el-pagination>
       </div>
     </div>
@@ -85,11 +88,16 @@
 </template>
 <script>
 import bus from "./eventBus";
+import Header from "@/views/header.vue";
 
 export default {
+  components: {
+    Header,
+  },
   data() {
     return {
-      cid:"000",
+      liketitle: "Recommend",
+      cid: "000",
       type: "no",
       sjs: "",
       iconColor: "#ffb24e",
@@ -104,7 +112,7 @@ export default {
       lbs: [],
       statusl: true,
       status2: false,
-      mtypeArry: ["Adventure", "Animation", "Children", "Comedy", "Fantasy", "Drama", "Mystery", "Thriller"],
+      mtypeArry: ["Animation", "Adventure", "Children", "Fantasy", "Mystery", "Thriller"],
     };
   },
   mounted() {
@@ -117,6 +125,9 @@ export default {
     bus.$on("home", (val) => {
       this.type = "no";
       console.log("你的喜欢", val);
+
+      this.statusl = true;
+      this.status2 = false;
       // this.init();
     });
   },
@@ -131,11 +142,12 @@ export default {
       console.log(`当前页: ${val}`);
     },
     async init() {
-      this.cid=window.sessionStorage.getItem("token");
-      const { data: res } = await this.$http.get("/api/ratings/getdata?type=" + this.type+"&cid="+this.cid);
+      this.cid = window.sessionStorage.getItem("uid");
+      const {data: res} = await this.$http.get("/api/ratings/getdata?type=" + this.type + "&cid=" + this.cid);
       this.rm = res.obj.rm;
       this.gf = res.obj.gf;
       this.tj = res.obj.tj;
+      this.liketitle = res.obj.title;
       this.type = "no";
       this.status2 = false;
       this.statusl = true;
@@ -168,7 +180,7 @@ export default {
       this.category_rightf();
       this.statusl = false;
       this.status2 = true;
-      const { data: res } = await this.$http.get("/api/ratings/classification?type=" + this.type);
+      const {data: res} = await this.$http.get("/api/ratings/classification?type=" + this.type);
       this.lb = res.obj.sj[0];
       this.lbs = res.obj.sj;
       this.total = res.obj.cd
