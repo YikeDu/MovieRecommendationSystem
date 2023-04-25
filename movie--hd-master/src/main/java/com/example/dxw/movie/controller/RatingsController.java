@@ -3,6 +3,7 @@ package com.example.dxw.movie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
+import com.example.dxw.https.dxw;
 import com.example.dxw.movie.mapper.*;
 import com.example.dxw.movie.pojo.*;
 import com.example.dxw.movie.service.CommentService;
@@ -11,7 +12,9 @@ import com.example.dxw.movie.service.RatingsService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,15 +44,14 @@ public class RatingsController {
     private PMovieXstjMapper pMovieXstjMapper;
     @Autowired
     private UserMapper userMapper;
-//    @Autowired
-//    private RatingsService ratingsService;
+    @Autowired
+    private CollectMapper collectMapper;
+
     @ApiOperation(value = "postmb模板")
     @GetMapping("lb")/**///postmb模板
-    public Object lb(String mid,String uid) throws Exception {
-
-        return ratingsService.getlb(mid,uid);
+    public Object lb(String mid, String uid) throws Exception {
+        return ratingsService.getlb(mid, uid);
     }
-
     @ApiOperation(value = "classification页面加载数据")
     @GetMapping("classification")/**///分类数据
     public Object classification(String type) throws Exception {
@@ -57,16 +59,24 @@ public class RatingsController {
         return ratingsService.getclassification(type);
     }
 
-    @ApiOperation(value = "hom页面加载数据")
-    @GetMapping("getdata")/**///getdata返回前端数据
-    public Object getdata(String type, String cid) throws Exception {
-        return ratingsService.getdata(type,cid);
+    @ApiOperation(value = "classification页面加载数据")
+    @GetMapping("classification2")/**///分类数据
+    public Object classification2(int currentPage,int pageSize,String type) throws Exception {
+
+        return ratingsService.classification2(currentPage,pageSize,type);
     }
+
+
     @ApiOperation(value = "jsData接受点赞的数据")
     @PostMapping("jsData")/**///postmb模板
     public Object jsData(@RequestBody Map map) throws Exception {
-        System.out.println("map = " + map);
         movieStarService.inert(map);
+        return null;
+    }
+    @ApiOperation(value = "收藏的数据")
+    @PostMapping("collect")/**///postmb模板
+    public Object collect(@RequestBody Map map) throws Exception {
+        movieStarService.collect(map);
         return null;
     }
 
@@ -92,13 +102,13 @@ public class RatingsController {
     @ApiOperation(value = "页面加载喜好数据数据!!")
     @GetMapping("getxh")/**///getmb模板
     public Object getxh(String cid) throws Exception {
-        String pj ="https://image.tmdb.org/t/p/w500";
-        List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getUsername, cid));
+        String pj = "https://image.tmdb.org/t/p/w500";
+        List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getId, cid));
         LinkedList<Object> xz = new LinkedList<>();
         LinkedHashMap<Object, Object> map3 = new LinkedHashMap<>();
         for (User user : users) {
             String xh = user.getXh();
-            if (xh!=null){
+            if (xh != null) {
                 String[] split = user.getXh().split(",");
 
                 for (String s : split) {
@@ -134,7 +144,7 @@ public class RatingsController {
                     List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid));
                     PMovieDO pMovieDO = pMovieDOS.get(0);
 
-                    map1.put("url", pj+pMovieDO.getImageSrc2());
+                    map1.put("url", pj + pMovieDO.getImageSrc2());
                     map1.put("name", pMovieDO.getName());
                     map1.put("title", key);
                     Object o = map3.get(key);
@@ -155,7 +165,7 @@ public class RatingsController {
                         List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid));
                         PMovieDO pMovieDO = pMovieDOS.get(0);
 
-                        map1.put("url",pj+ pMovieDO.getImageSrc2());
+                        map1.put("url", pj + pMovieDO.getImageSrc2());
                         map1.put("name", pMovieDO.getName());
                         map1.put("title", key);
                         Object o = map3.get(key);
@@ -177,7 +187,7 @@ public class RatingsController {
                             LinkedHashMap<Object, Object> map1 = new LinkedHashMap<>();
                             List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid, movieid));
                             PMovieDO pMovieDO = pMovieDOS.get(0);
-                            map1.put("url",pj+ pMovieDO.getImageSrc2());
+                            map1.put("url", pj + pMovieDO.getImageSrc2());
                             map1.put("name", pMovieDO.getName());
                             map1.put("title", key);
                             Object o = map3.get(key);
@@ -198,11 +208,66 @@ public class RatingsController {
         map1.put("xz", xz);
         return ResBean.success("成功", map1);
     }
+    @ApiOperation(value = "收藏数据!!")
+    @GetMapping("getCollect")/**///getmb模板
+    public Object getCollect(int currentPage,int pageSize,HttpServletRequest request) throws Exception {
+        return ratingsService.getCollect( currentPage, pageSize,request);
+    }
+
     @ApiOperation(value = "新开页面的打分数据和评论数据!!")
     @GetMapping("getxk")/**///getmb模板
-    public Object getxk(String cid,String mid) throws Exception {
+    public Object getxk(String cid, String mid) throws Exception {
 
-        return ratingsService.getxk(cid,mid);
+        return ratingsService.getxk(cid, mid);
+    }
+
+    //    =======================================================>
+    @ApiOperation(value = "hom页面加载数据")
+    @GetMapping("HomePage")/**///HomePage
+    public Object getHomePage(HttpServletRequest request) throws Exception {
+        long now = dxw.now();
+        Object homePage = ratingsService.getHomePage(request);
+        long now2 = dxw.now2(now);
+        return homePage;
+    }
+    @ApiOperation(value = "页面加载数据")
+    @GetMapping("mid")/**///HomePage
+    public Object mid(String mid,HttpServletRequest request) throws Exception {
+        return ratingsService.mid(mid,request);
+    }
+    @ApiOperation(value = "页面加载数据")
+    @GetMapping("getLb")/**///HomePage
+    public Object getLb(String mid,HttpServletRequest request) throws Exception {
+        return ratingsService.getLb(mid,request);
+    }
+
+    @ApiOperation(value = "搜索", notes = "")
+    @GetMapping("searching")//搜索searching
+    public Object searching(String search) throws Exception {
+        return ratingsService.searching(search);
+    }
+    @ApiOperation(value = "喜好数据")
+    @GetMapping("getXh")/**///HomePage
+    public Object getXh(int currentPage,int pageSize,HttpServletRequest request) throws Exception {
+        return ratingsService.getXh( currentPage, pageSize,request);
+    }
+    @ApiOperation(value = "喜好数据")
+    @GetMapping("simUserIds")/**///HomePage
+    public Object simUserIds (int currentPage,int pageSize,HttpServletRequest request) throws Exception {
+        long now = dxw.now();
+        Object o = ratingsService.simUserIds(currentPage, pageSize, request);
+        long l = dxw.now2(now);
+        return o;
+    }
+    @ApiOperation(value = "喜好数据")
+    @GetMapping("userID")/**///HomePage
+    public Object userID (int currentPage,int pageSize,int userid,HttpServletRequest request) throws Exception {
+        return ratingsService.userID ( currentPage, pageSize,userid,request);
+    }
+    @ApiOperation(value = "上传头像", notes = "")
+    @PostMapping("upload")//
+    public Object upload(MultipartFile file, HttpServletRequest request) throws Exception {
+        return ratingsService.upload(file, request);
     }
 }
 

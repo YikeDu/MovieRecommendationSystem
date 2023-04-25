@@ -1,13 +1,11 @@
 package com.example.dxw.movie.controller;
 
 
+import com.example.dxw.movie.pojo.ResBean;
 import com.example.dxw.movie.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -60,8 +58,6 @@ public class UserController {
     @ApiOperation(value = "发送验证码")
     @PostMapping("user/yzm")/**///postmb注册
     public Object yzm(@RequestBody Map map) throws Exception {
-        System.out.println("map = " + map);
-
         return userService.yzm(map);
     }
     @ApiOperation(value = "发送验证码修改密码")
@@ -70,5 +66,7 @@ public class UserController {
         System.out.println("map = " + map);
         return userService.xgma(map);
     }
+
+
 }
 
