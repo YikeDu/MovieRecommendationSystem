@@ -9,14 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/**
- * <p>
- * 
- * </p>
- *
- * @author xianwen.deng
- * @since 2023-02-24
- */
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @TableName("lb")

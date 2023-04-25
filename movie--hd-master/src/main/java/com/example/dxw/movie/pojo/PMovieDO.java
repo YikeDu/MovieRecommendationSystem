@@ -16,7 +16,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @TableName("p_movie")
 @ApiModel(value="PMovieDO对象", description="")
-public class PMovieDO implements Serializable {
+public class PMovieDO implements  Comparable<PMovieDO>{
 
     private static final long serialVersionUID = 1L;
 
@@ -59,8 +59,17 @@ public class PMovieDO implements Serializable {
     private String routing;
     private String fz;
     private String timestamp;
+    private String genres;
     @TableField(exist = false)
     private Object comment;
+    @TableField(exist = false)
+    private Object star;
 
-
+    @Override
+    public int compareTo(PMovieDO o) {
+        Integer intFz= Integer.valueOf(this.star.toString());
+        Integer intFz2= Integer.valueOf(o.star.toString());
+//        return intFz-intFz2>=0?1:-1;
+        return intFz-intFz2;
+    }
 }
