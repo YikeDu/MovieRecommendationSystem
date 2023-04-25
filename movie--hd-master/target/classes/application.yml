@@ -1,6 +1,6 @@
 server:
   port: 40015
-#  http://localhost:40015/#/
+#  http://localhost:40015
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -15,25 +15,24 @@ spring:
           password: du197312299
           max-active: 5
           initialSize: 3
+  servlet:
+    multipart:
+      max-file-size: 100MB
+
   mail:
-#    host: smtp.qq.com
-    host: smtp.gmail.com
+    host: smtp.qq.com
     protocol: smtp
-#    username: xiaojiandxw@gmail.com
-    username: cinematographweb@gmail.com
-    password: uvacvmnffpxvowek
-#    password: ppsudkqonfgdbfgg
-#    password: cegolojwdblpkwda
+    username: 591278546@qq.com
+    password: ygpuoawfrzusbbcj
     default-encoding: UTF-8
     test-connection: true
     port: 587
-#    port: 587
-    properties:
-      mail:
-        smtp:
-          starttls:
-            enable: true
-          socketFactoryClass: javax.net.ssl.SSLSocketFactory
+#    properties:
+#      mail:
+#        smtp:
+#          starttls:
+#            enable: true
+#          socketFactoryClass: javax.net.ssl.SSLSocketFactory
 
 
   jackson:
@@ -53,15 +52,19 @@ mybatis-plus:
     db-config:
       table-prefix:
       id-type: auto
+file:
+  path: /file/**   #文件访问路径
+  address:  D://uploadFiles/  #文件保存路径
+ip: localhost
 #打印查询日志，需要的就打开
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-logging:
-  level:
-    root: error
-  pattern:
-  file:
-    name: 模板.log
+#logging:
+#  level:
+#    root: error
+#  pattern:
+#  file:
+#    name: 模板.log
 #  logback:
 #    rollingpolicy:
 #      max-file-size: 1MB

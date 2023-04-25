@@ -12,21 +12,18 @@ import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import org.junit.jupiter.api.Test;
 //import org.junit.jupiter.api.Test;
 
-/**
- * @author mufeng
- * @create 2022-02-18 15:05
- */
+
 public class GetCodeTwo {
     @Test
     public void main1() {
         String path=System.getProperty("user.dir") + "\\src\\main\\java";
         String databaseUrl="jdbc:mysql://localhost:3306/film?serverTimezone=GMT%2B8";/**数据库地址*/
         String parent="com.example.dxw.movie";/**生成文件项目名称的文件夹*/
-        String include="p_movie";/**映射数据库的表*/
-        String include2="ma_production_ps_sc_ip_";/**需要去掉的表前缀*/
+        String include="collect";/**映射数据库的表*/
+        String include2="ratings_";/**需要去掉的表前缀*/
         String username="root";/**数据库账号*/
         String password="root";/**数据库密码*/
-        String setAuthor="xianwen.deng";/**数据库密码*/
+        String setAuthor="";/**数据库密码*/
         Boolean setSwagger2=true;//开启Swagger2模式
 
         // 1、创建代码生成器

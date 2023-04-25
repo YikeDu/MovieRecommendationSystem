@@ -1,20 +1,26 @@
 package com.example.dxw;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.example.dxw.https.General;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.dxw.https.Methods;
-import com.example.dxw.movie.mapper.SimUsersMapper;
-import com.example.dxw.movie.mapper.UserMapper;
-import com.example.dxw.movie.pojo.SimUser;
-import com.example.dxw.movie.pojo.User;
+import com.example.dxw.https.dxw;
+import com.example.dxw.movie.mapper.*;
+import com.example.dxw.movie.pojo.*;
+import com.example.dxw.movie.service.impl.MailImpl;
 import com.example.dxw.movie.service.impl.RatingsServiceImpl;
 import org.junit.jupiter.api.Test;
+import org.python.core.PyFunction;
+import org.python.core.PyInteger;
+import org.python.core.PyObject;
+import org.python.util.PythonInterpreter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.LinkedList;
+import javax.print.attribute.standard.NumberUp;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.List;
 
 @SpringBootTest
@@ -25,33 +31,51 @@ class DTests {
     private UserMapper userMapper;
     @Autowired
     private RatingsServiceImpl ratingsService;
+    @Autowired
+    private PMovieMapper pMovieMapper;
+    @Autowired
+    private RatingsMapper ratingsMapper;
+    @Autowired
+    private PMovieXstjMapper pMovieXstjMapper;
+    @Autowired
+    private MoviesMapper moviesMapper;
+    @Autowired
+    private LbMapper lbMapper;
+    @Autowired
+    private MailImpl mail;
 
     @Test
-    void contextLoads() {
-//        User user = new User();
-//        List<RatingsServiceImpl.RcdItem> rcdItems = ratingsService.rcdFilm(user);
-
-//        String url = "https://api.themoviedb.org/3/movie/555?api_key=047cc1d00267ec4a18b7791675dc1566";
-//        String mid = General.mid;
-//        Object image1 = JSONObject.parseObject(mid).get("backdrop_path");
-//        Object image2 = JSONObject.parseObject(mid).get("poster_path");
-//        String imageSrc1 = "https://image.tmdb.org/t/p/w500" + image1;
-//        String imageSrc2 = "https://image.tmdb.org/t/p/w500" + image2;
-//
-//        Object jj = JSONObject.parseObject(mid).get("overview");
-//        Object language = JSONObject.parseObject(mid).get("original_language");
-//        Object title = JSONObject.parseObject(mid).get("original_title");
-////        电影名
-//        Object name = JSONObject.parseObject(mid).getJSONObject("belongs_to_collection").get("name");
-//        JSONArray jsonArray = JSONObject.parseObject(mid).getJSONArray("genres");
-//        List<String> mtypeLis = new LinkedList<>();
+    void contextLoads() throws UnsupportedEncodingException {
+//        String er = Str.er;
+//        JSONArray jsonArray = JSONObject.parseObject(er).getJSONArray("results");
+//        int i=0;
 //        for (Object o : jsonArray) {
-//            Object mtype = JSONObject.parseObject(mid).get("name");
-//            mtypeLis.add(mtype.toString());
+//            Object id = JSONObject.parseObject(o.toString()).get("id");
+////
+//            PMovieDO pMovieDO = pMovieMapper.selectOne(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid,id).last("limit 1"));
+//
+//            if (pMovieDO!=null){
+//                pMovieDO.setRouting("rm");
+//                pMovieMapper.updateById(pMovieDO);
+////                System.out.println("pMovieDO = " + pMovieDO);
+//                System.out.println("i = " + i);
+//                i++;
+//            }
 //        }
-//        System.out.println(jj);
-//        List<SimUser> simUsers = simUsersMapper.selectBatchIds(null);
-//        List<User> users = userMapper.selectList(null);
-//        System.out.println(users);
+        long now = dxw.now();
+//        List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7"));
+//
+//        List<PMovieDO> pMovieDOSrm = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getRouting, "rm").last("limit 7"));
+//        List<PMovieDO> pMovieDOStj = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7,7"));
+        List<PMovieDO> pMovieDOS = pMovieMapper.selectList(null);
+        for (PMovieDO pMovieDO : pMovieDOS) {
+            List<Movies> movies = moviesMapper.selectList(new LambdaQueryWrapper<Movies>().like(Movies::getMovieid,pMovieDO.getMovieid()));
+            if (movies.size()>0){
+                Movies movies1 = movies.get(0);
+                pMovieDO.setGenres(movies1.getGenres());
+                pMovieMapper.updateById(pMovieDO);
+            }
+        }
+        long l = dxw.now2(now);
     }
 }
