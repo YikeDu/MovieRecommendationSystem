@@ -18,7 +18,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public Object insert(Map map) {
         Comment comment = new Comment();
-        comment.setUid(map.get("uid").toString());
+        comment.setUid(map.get("cid").toString());
         comment.setMid(map.get("mid").toString());
         comment.setCid(map.get("cid").toString());
         comment.setCTimeStr(map.get("ctimeStr").toString());

@@ -1,5 +1,6 @@
 server:
   port: 40015
+#  http://localhost:40015
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -14,6 +15,26 @@ spring:
           password: du197312299
           max-active: 5
           initialSize: 3
+  servlet:
+    multipart:
+      max-file-size: 100MB
+
+  mail:
+    host: smtp.qq.com
+    protocol: smtp
+    username: 591278546@qq.com
+    password: ygpuoawfrzusbbcj
+    default-encoding: UTF-8
+    test-connection: true
+    port: 587
+#    properties:
+#      mail:
+#        smtp:
+#          starttls:
+#            enable: true
+#          socketFactoryClass: javax.net.ssl.SSLSocketFactory
+
+
   jackson:
     date-format: yyyy-MM-dd
     time-zone: GMT+8
@@ -31,18 +52,39 @@ mybatis-plus:
     db-config:
       table-prefix:
       id-type: auto
+file:
+  path: /file/**   #文件访问路径
+  address:  D://uploadFiles/  #文件保存路径
+ip: localhost
 #打印查询日志，需要的就打开
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-logging:
-  level:
-    root: error
-  pattern:
-  file:
-    name: 模板.log
+#logging:
+#  level:
+#    root: error
+#  pattern:
+#  file:
+#    name: 模板.log
 #  logback:
 #    rollingpolicy:
 #      max-file-size: 1MB
 #      file-name-pattern: 模板.%d{yyyy-MM-dd}.%i.log
+#  spring.mail.host=smtp.qq.com
+#
+#  spring.mail.port=465
+#
+#  spring.mail.protocol=smtp
+#  # 发送邮箱的账号
+#  spring.mail.username=XXXXX@qq.com
+#  # 此为开通qq邮箱POP3/SMTP服务之后的激活码
+#  spring.mail.password=********
+#
+#  spring.mail.default-encoding=UTF-8
+#
+#  spring.mail.test-connection=true
+#  # 可以不用设置
+#  spring.mail.properties.mail.smtp.socketFactory.class=javax.net.ssl.SSLSocketFactory
+#  spring.mail.properties.mail.smtp.debug=true
+
 
 

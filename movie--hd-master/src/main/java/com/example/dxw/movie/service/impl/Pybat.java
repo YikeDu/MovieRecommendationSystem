@@ -5,12 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 
-/**
- * Classname: SSSS
- * Package: com.example.wastereturns
- * Description:
- * Version 1.0
- */
+
 public class Pybat {
 //    public static void main(String[] args) throws IOException, InterruptedException {
 //        // 设置 PowerShell 命令

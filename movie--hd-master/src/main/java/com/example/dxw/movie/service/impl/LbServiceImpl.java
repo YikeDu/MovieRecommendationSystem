@@ -6,11 +6,7 @@ import com.example.dxw.movie.service.ILbService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
-/**
- * <p>
- *  服务实现类
- * </p>
- */
+
 @Service
 public class LbServiceImpl extends ServiceImpl<LbMapper, LbDO> implements ILbService {
 

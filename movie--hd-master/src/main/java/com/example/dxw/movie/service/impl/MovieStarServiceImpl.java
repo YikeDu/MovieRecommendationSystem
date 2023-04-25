@@ -2,8 +2,10 @@ package com.example.dxw.movie.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.dxw.movie.mapper.CollectMapper;
 import com.example.dxw.movie.mapper.MoviesMapper;
 import com.example.dxw.movie.mapper.RatingsMapper;
+import com.example.dxw.movie.pojo.CollectDO;
 import com.example.dxw.movie.pojo.MovieStar;
 import com.example.dxw.movie.mapper.MovieStarMapper;
 import com.example.dxw.movie.pojo.Ratings;
@@ -22,6 +24,9 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
     private MovieStarMapper movieStarMapper;
     @Autowired
     private RatingsMapper ratingsMapper;
+    @Autowired
+    private CollectMapper collectMapper;
+
 
     @Override
     public void inert(Map map) {
@@ -31,8 +36,8 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
         Integer uid = Integer.valueOf(map.get("uid").toString());
         String star = map.get("star").toString();
 //        String cid = map.get("cid").toString();
-        String cid = uid+"";
-        System.out.println("cid:"+cid);
+        String cid = uid + "";
+        System.out.println("cid:" + cid);
 //        String mid = map.get("mid").toString();
         String year = map.get("year").toString();
         String title = map.get("title").toString();
@@ -40,26 +45,30 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
 //        String mtypeLis = map.get("mtypeLis").toString();
         String movieid = map.get("movieid").toString();
 //        String runtime = map.get("runtime").toString();
-        String imageSrc1 = map.get("imageSrc1").toString();
-        String imageSrc2 = map.get("imageSrc2").toString();
+        String imageSrc1 = "https://image.tmdb.org/t/p/w500" + map.get("imageSrc2").toString();
+        String imageSrc2 = "https://image.tmdb.org/t/p/w500" + map.get("imageSrc1").toString();
         String jj = map.get("jj").toString();
         String language = map.get("language").toString();
-        String voteCount = map.get("voteCount").toString();
+        String voteCount = "";
+        if (map.get("voteCount") != null) {
+            voteCount = map.get("voteCount").toString();
+        }
+
 //        String datas = JSON.toJSONString(map);
         String datas = map.toString();
-        List<MovieStar> movieStars = movieStarMapper.selectList(new LambdaQueryWrapper<MovieStar>().eq(MovieStar::getMid,id).eq(MovieStar::getCid,cid));
+        List<MovieStar> movieStars = movieStarMapper.selectList(new LambdaQueryWrapper<MovieStar>().eq(MovieStar::getMid, id).eq(MovieStar::getCid, cid));
         System.out.println(movieStars);
-        if (movieStars.size()>0){
+        if (movieStars.size() > 0) {
             MovieStar movieStar = movieStars.get(0);
             movieStar.setStar(star);
             movieStar.setDatas(datas);
             movieStarMapper.updateById(movieStar);
-        }else {
+        } else {
             MovieStar movieStar = new MovieStar();
             movieStar.setStar(star);
             movieStar.setDatas(datas);
             movieStar.setMid(id.toString());
-            movieStar.setMovie(moveid+"");
+            movieStar.setMovie(moveid + "");
             movieStar.setYear(year);
 //            movieStar.setRuntime(runtime);
             movieStar.setImagesrc1(imageSrc1);
@@ -76,12 +85,66 @@ public class MovieStarServiceImpl extends ServiceImpl<MovieStarMapper, MovieStar
         List<Ratings> ratings1 = ratingsMapper.selectList(new LambdaQueryWrapper<Ratings>().orderByDesc(Ratings::getId).last("limit 1"));
         Ratings ratings = new Ratings();
         Ratings ratings2 = ratings1.get(0);
-        ratings.setIndexl(ratings2.getId()+"");
-        ratings.setUserid(uid+"");
+        ratings.setIndexl(ratings2.getId() + "");
+        ratings.setUserid(uid + "");
 //        ratings.setUserid(cid);
         ratings.setMovieid(movieid);
         ratings.setRating(Integer.valueOf(star));
         ratings.setTimestamp(id.toString());
         ratingsMapper.insert(ratings);
     }
+    @Override
+    public void collect(Map map) {
+        System.out.println("map = " + map);
+
+        Integer id = Integer.valueOf(map.get("id").toString());
+        Integer moveid = Integer.valueOf(map.get("movieid").toString());
+        Integer uid = Integer.valueOf(map.get("uid").toString());
+        String star = map.get("star").toString();
+
+        String cid = uid + "";
+
+        String year = map.get("year").toString();
+        String title = map.get("title").toString();
+        String name = map.get("name").toString();
+        String movieid = map.get("movieid").toString();
+        String imageSrc1 = "https://image.tmdb.org/t/p/w500" + map.get("imageSrc2").toString();
+        String imageSrc2 = "https://image.tmdb.org/t/p/w500" + map.get("imageSrc1").toString();
+        String jj = map.get("jj").toString();
+        String language = map.get("language").toString();
+        String voteCount = "";
+
+        if (map.get("voteCount") != null) {
+            voteCount = map.get("voteCount").toString();
+        }
+//        String datas = JSON.toJSONString(map);
+        String datas = map.toString();
+        List<CollectDO> movieStars = collectMapper.selectList(new LambdaQueryWrapper<CollectDO>().eq(CollectDO::getMid, id).eq(CollectDO::getCid, cid));
+        System.out.println(movieStars);
+        if (movieStars.size() > 0) {
+            CollectDO movieStar = movieStars.get(0);
+            movieStar.setStar(star);
+            movieStar.setDatas(datas);
+            collectMapper.updateById(movieStar);
+        } else {
+            CollectDO movieStar = new CollectDO();
+            movieStar.setStar(star);
+            movieStar.setDatas(datas);
+            movieStar.setMid(id.toString());
+            movieStar.setMovie(moveid + "");
+            movieStar.setYear(year);
+//            movieStar.setRuntime(runtime);
+            movieStar.setImagesrc1(imageSrc1);
+            movieStar.setImagesrc2(imageSrc2);
+            movieStar.setJj(jj);
+            movieStar.setLanguage(language);
+            movieStar.setTitle(title);
+            movieStar.setName(name);
+            movieStar.setVotecount(voteCount);
+            movieStar.setCid(cid);
+//            movieStar.setMtypelis(mtypeLis);
+            collectMapper.insert(movieStar);
+        }
+    }
+
 }

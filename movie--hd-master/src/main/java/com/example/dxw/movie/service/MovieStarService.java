@@ -14,4 +14,6 @@ import java.util.Map;
 public interface MovieStarService extends IService<MovieStar> {
 
     void inert(Map map);
+
+    void collect(Map map);
 }
