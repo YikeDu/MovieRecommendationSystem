@@ -314,10 +314,6 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         LinkedHashMap<Object, Object> linkMap = new LinkedHashMap<>();
         linkMap.put("size", 10);
         List<User> users = userMapper.selectList(null);
-        users.add(new User().setId(307));
-        users.add(new User().setId(414));
-        users.add(new User().setId(639));
-        users.add(new User().setId(639));
         for (User user : users) {
             String picturel = user.getPicturel();
             if (picturel == null) {
