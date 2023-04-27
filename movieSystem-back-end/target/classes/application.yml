@@ -11,8 +11,8 @@ spring:
           driver-class-name: com.mysql.cj.jdbc.Driver
           url: jdbc:mysql://localhost:3306/film?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
           username: root
-          password: root
-#          password: du197312299
+#          password: root
+          password: du197312299
           max-active: 5
           initialSize: 3
   servlet:

@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("p_movie_xstj")
+@TableName("p_movie")
 @ApiModel(value="PMovieXstjDO对象", description="")
 public class PMovieXstjDO implements Serializable {
 

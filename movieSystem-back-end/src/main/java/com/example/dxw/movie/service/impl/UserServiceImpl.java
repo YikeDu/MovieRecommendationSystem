@@ -83,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }else {
             user.setPassword(ma.toString());
             int i = userMapper.updateById(user);
-            return ResBean.success("The account information is updated successfully",i);
+            return ResBean.success("The account information is updated successfully. ",i);
         }
     }
 
@@ -107,14 +107,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Object checkUsername(Object username, Object password, Object email) {
         List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>().eq(User::getUsername, username));
         if (users.size()>0){
-            return ResBean.error("Your account already exists!");
+            return ResBean.error("The account you registered already exists!");
         }else {
             User user = new User();
             user.setUsername(username.toString());
             user.setPassword(password.toString());
             user.setEmail(email.toString());
             int insert = userMapper.insert(user);
-            return ResBean.success("registered successfully!");
+            return ResBean.success("Register successfully!");
         }
     }
 
@@ -127,7 +127,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         users.setEmail(Email);
         users.setUsername(UserName);
         int i = userMapper.updateById(users);
-        return ResBean.success("The account information is updated successfully.",i);
+        return ResBean.success("The account information is updated successfully",i);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String Password = map.get("Password").toString();
         User users = userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getId,id));
         if(!users.getPassword().equals(oPassword)){
-            return ResBean.error("Does not match the original password, modify failed!");
+            return ResBean.error("The password does not match the original password!");
         }
         users.setPassword(Password);
         int i = userMapper.updateById(users);

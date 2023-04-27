@@ -87,7 +87,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         LinkedHashMap<Object, Object> linkMap = new LinkedHashMap<>();
         linkMap.put("star", movieStars);
         linkMap.put("comments", comments);
-        return ResBean.success("succeed", linkMap);
+        return ResBean.success("Succeed", linkMap);
     }
 
     @Override
@@ -170,7 +170,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         IPage iPage = pMovieMapper.selectPage(page, like);
         linkMap.put("size", pMovieDOS.size());
         linkMap.put("records", iPage.getRecords());
-        return ResBean.success("Query success", linkMap);
+        return ResBean.success("Query Success", linkMap);
 
 
     }
@@ -196,7 +196,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
                 pMovieDO.setStar(movieStar.getStar());
             }
         }
-        return ResBean.success("succeed", pMovieDO);
+        return ResBean.success("Succeed", pMovieDO);
     }
 
     @Override
@@ -285,7 +285,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         System.out.println("user = " + user);
         String originName = file.getOriginalFilename();
         if (!originName.endsWith(".png")) {
-            return ResBean.error("Upload failed, picture format is incorrect!");
+            return ResBean.error("Uploading failed. The picture format is incorrect!");
         }
         String format = formatter.format(now);
         String realPath = address + format;
@@ -306,7 +306,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         System.out.println("newName = " + newName);
         System.out.println("url = " + url);
         url = "http://" + ip + ":" + port + url;
-        return ResBean.success("succeed", url);
+        return ResBean.success("Succeed", url);
     }
 
     @Override
@@ -330,7 +330,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 //        307,414,623,639
 
         if (true) {
-            return ResBean.success("succeed", linkMap);
+            return ResBean.success("Succeed", linkMap);
         }
 
         User user = getUser(request);
@@ -381,7 +381,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 
 
         linkMap.put("records", users3);
-        return ResBean.success("succeed！", linkMap);
+        return ResBean.success("Succeed！", linkMap);
     }
 
     @Override
@@ -413,7 +413,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
             linkMap2.put("records", linkedList.subList(i, linkedList.size()));
         }
 
-        return ResBean.success("succeed", linkMap2);
+        return ResBean.success("Succeed", linkMap2);
     }
     @Override
     public Object getCollect(int currentPage, int pageSize, HttpServletRequest request) {
@@ -430,7 +430,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         IPage iPage = collectMapper.selectPage(page, Query);
         map.put("size", list.size());
         map.put("records", iPage.getRecords());
-        return ResBean.success("succeed",map);
+        return ResBean.success("Succeed",map);
     }
     @Override
     public Object searching(String search) {
@@ -489,7 +489,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
             linkedList.add(pMovieDO);
         }
 
-        return ResBean.success("succeed", linkedList);
+        return ResBean.success("Succeed", linkedList);
     }
 
     @Override
@@ -580,7 +580,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 
     @Override
     public Object getlb(String mid, String uid) {
-        return ResBean.success("成功", getcomments2(mid, uid));
+        return ResBean.success("Succeed", getcomments2(mid, uid));
     }
 
     @Override

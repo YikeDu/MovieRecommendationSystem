@@ -206,7 +206,7 @@ public class RatingsController {
         LinkedHashMap<Object, Object> map1 = new LinkedHashMap<>();
         map1.put("types", objects);
         map1.put("xz", xz);
-        return ResBean.success("Succeed", map1);
+        return ResBean.success("succeed", map1);
     }
     @ApiOperation(value = "收藏数据!!")
     @GetMapping("getCollect")/**///getmb模板

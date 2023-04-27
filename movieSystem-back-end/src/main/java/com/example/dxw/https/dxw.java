@@ -68,7 +68,6 @@ public class dxw {
         return null;
     }
 
-
     public static String rqzfc() {
         Date time = new Date(); // 获取当前时间
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -335,6 +334,7 @@ public class dxw {
         return str2;
     }
 
+
     public static String sdf5() {
         GregorianCalendar calendar = new GregorianCalendar();
         int minute = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
@@ -536,10 +536,10 @@ public class dxw {
         int i = ps.exitValue();  //接收执行完毕的返回值
         String status = "0";
         if (i == 0) {
-            System.out.println("执行完成.");
+            System.out.println("execution is completed");
             status = "1";
         } else {
-            System.out.println("执行失败.");
+            System.out.println("Exec failure.");
         }
         ps.destroy();  //销毁子进程
         ps = null;
