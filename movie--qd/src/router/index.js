@@ -2,16 +2,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import afuntion from "../assets/js/afuntion.js";
 
-import Home from '@/views/home'
-import Login from '@/views/login'
-import Signup from '@/views/signup'
-import Setting from '@/views/setting'
-import Logout from '@/views/logout'
-import Mdetails from '@/views/Mdetails'
-import Mdetails2 from '@/views/Mdetails2'
-import Like from '@/views/Like'
-import Like2 from '@/views/Like2'
-import Change from '@/views/Change'
 
 Vue.use(Router)
 
@@ -21,8 +11,8 @@ const router = new Router({
     // routes,
 
     routes: [
-        {path: '/', redirect: '/HomePage'},
-        { path: '/Home', name: 'Home', component:() => import('@/views/home'),},
+        {path: '/', redirect: '/welcomeHome'},
+        {path: '/welcomeHome', name: 'NewHome', component: () => import('@/view/NewHome')},
         {path: '/Home2', name: 'Home2', component: () => import('@/vcomponent/Home'),
             children: [
                 {path: '/HomePage', component: () => import('@/view/HomePage')},
@@ -36,20 +26,11 @@ const router = new Router({
                 {path: '/Genres', component: () => import('@/view/Genres')},
                 {path: '/Favorite', component: () => import('@/view/Favorite')},
                 {path: '/SimUserIds', component: () => import('@/view/SimUserIds')},
-                {path: '/UserID', component: () => import('@/view/UserID')},
+                {path: '/UserID', name:"UserID",component: () => import('@/view/UserID')},
                 {path: '/Details2', component: () => import('@/view/Details2')},
-
+                {path: '/collect', component: () => import('@/view/Collect')},
             ]
         },
-        { path: '/login', name: 'Login', component: Login },
-        { path: '/signup', name: 'Signup', component: Signup },
-        { path: '/setting', name: 'Setting', component: Setting },
-        { path: '/logout', name: 'Logout', component: Logout },
-        { path: '/mdetails', name: 'Mdetails', component: Mdetails },
-        { path: '/mdetails2', name: 'Mdetails2', component: Mdetails2 },
-        { path: '/like', name: 'Like', component: Like },
-        { path: '/like2', name: 'Like2', component: Like2 },
-        { path: '/change', name: 'Change', component: Change },
     ]
 
 })

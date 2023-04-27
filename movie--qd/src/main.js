@@ -9,6 +9,7 @@ import './assets/fonts/iconfont.css';
 import * as echarts from 'echarts';
 import * as xlsx from "xlsx";
 import ElementUI from 'element-ui';
+import locale from 'element-ui/lib/locale/lang/en' ;
 import 'element-ui/lib/theme-chalk/index.css';
 import { Message } from 'element-ui';
 // import axios from "axios";
@@ -16,7 +17,8 @@ import { Message } from 'element-ui';
 // Vue.prototype.outToExcels = Excels;
 import afuntion from "./assets/js/afuntion.js";
 // Vue.use(vueResource);
-Vue.use(ElementUI);
+Vue.use(ElementUI,{locale});
+
 // Vue.prototype.$echarts = echarts
 // Vue.prototype.$excelxlsx = xlsx
 Vue.prototype.$afuntion = afuntion

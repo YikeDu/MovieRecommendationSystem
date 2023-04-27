@@ -31,15 +31,23 @@ const mutations={
   },
   cadmin(){
     state.admin= {
-      email:'Not logged in'
+      email:'Not logged in',
+      username:'Login'
     }
   },
   mtypes(conctext,value){
     console.log("这里是打印", );
     state.mtypes=value
   },
+  cadmin2(){
+    state.register=true
+  },
+  cadmin3(){
+    state.register=false
+  }
 }
 const state={
+  register:false,
   mtypes:'',
   admin:{},
   sum:1,

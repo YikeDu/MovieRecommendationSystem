@@ -23,7 +23,7 @@ module.exports = {
       entry: 'src/main.js',
       filename: 'index.html',
       template: 'public/index.html',
-      title: '后台管理系统',
+      title: 'Movie System',
       chunks: ['chunk-vendors', 'chunk-common', 'index']
     }
   }
