@@ -15,7 +15,7 @@
             <el-rate v-model=sj.star @change="starf"></el-rate>
           </div>
           <a href="#">
-            <div class="bj-box1" @click="collect"><i class="el-icon-view"></i></div>
+            <div class="bj-box1" @click="collect"><i class="el-icon-collection-tag"></i></div>
           </a>
 
         </div>

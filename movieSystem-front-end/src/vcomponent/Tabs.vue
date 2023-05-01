@@ -11,7 +11,7 @@
           active-text-color="#ffd04b">
 
         <el-menu-item index="1" @click="collect" v-if=register>
-          <i class="el-icon-view"></i>
+          <i class="el-icon-collection-tag"></i>
         </el-menu-item>
         <el-menu-item index="1" @click="signup" v-if=!register>Signup</el-menu-item>
 <!--        <el-menu-item index="2" @click="login">Login</el-menu-item>-->
