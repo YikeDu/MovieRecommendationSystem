@@ -1,23 +1,19 @@
 package com.example.dxw.movie.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.dxw.https.General;
 import com.example.dxw.https.Methods;
 import com.example.dxw.https.dxw;
 import com.example.dxw.movie.mapper.*;
 import com.example.dxw.movie.pojo.*;
 import com.example.dxw.movie.service.RatingsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.dxw.movie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.python.util.PythonInterpreter;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,7 +24,6 @@ import java.net.URLDecoder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,7 +82,196 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         LinkedHashMap<Object, Object> linkMap = new LinkedHashMap<>();
         linkMap.put("star", movieStars);
         linkMap.put("comments", comments);
-        return ResBean.success("Succeed", linkMap);
+        return ResBean.success("succeed", linkMap);
+    }
+
+    List<PMovieDO> week() {
+        String er = Methods.generalGet("https://api.themoviedb.org/3/trending/movie/week?api_key=047cc1d00267ec4a18b7791675dc1566");
+//        String er = StrJosn.week;
+        JSONArray jsonArray = JSONObject.parseObject(er).getJSONArray("results");
+        LinkedList<PMovieDO> pMovieDOLinkedList = new LinkedList<>();
+
+        for (Object o : jsonArray) {
+            String id = JSONObject.parseObject(o.toString()).get("id").toString();
+            String bj = JSONObject.parseObject(o.toString()).get("backdrop_path").toString();
+            String poster_path = JSONObject.parseObject(o.toString()).get("poster_path").toString();
+            String original_title = JSONObject.parseObject(o.toString()).get("original_title").toString();
+            String original_language = JSONObject.parseObject(o.toString()).get("original_language").toString();
+            String overview = JSONObject.parseObject(o.toString()).get("overview").toString();
+            JSONArray genre_ids = JSONObject.parseObject(o.toString()).getJSONArray("genre_ids");
+            String genre_idStr = "";
+            for (Object genre_id : genre_ids) {
+                genre_idStr += genre_id + ",";
+            }
+            PMovieDO pMovieDO = new PMovieDO();
+
+            pMovieDO.setMovieid(id);
+            pMovieDO.setYear(id);
+            pMovieDO.setRuntime("249");
+            pMovieDO.setImageSrc1(bj);
+            pMovieDO.setImageSrc2(poster_path);
+            pMovieDO.setJj(overview);
+            pMovieDO.setLanguage(original_language);
+            pMovieDO.setTitle(original_title);
+            pMovieDO.setName(original_title);
+            pMovieDO.setMtypeLis(genre_idStr);
+            pMovieDO.setVoteCount(genre_idStr);
+
+            String tjJson = Methods.generalGet("https://api.themoviedb.org/3/movie/" + id + "/recommendations?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1");
+//            String tjJson = StrJosn.tjJson;
+            pMovieDO.setTj(xsOrTj(tjJson));
+
+            String xsJson = Methods.generalGet("https://api.themoviedb.org/3/movie/" + id + "/similar?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US&page=1");
+//            String xsJson = StrJosn.xsJson;
+            pMovieDO.setXs(xsOrTj(xsJson));
+            String setHearf = Methods.generalGet("https://api.themoviedb.org/3/movie/" + id + "/videos?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US");
+            pMovieDO.setHearf(hearf(setHearf));
+//            pMovieDO.setRouting("3");//展无
+//            pMovieDO.setFz();
+//            pMovieDO.setTimestamp();
+//            pMovieDO.setGenres();
+//            pMovieDO.setComment();
+//            pMovieDO.setStar();
+
+            pMovieDOLinkedList.add(pMovieDO);
+            List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>()
+                    .eq(PMovieDO::getMovieid, id));
+            if (pMovieDOS.size() > 0) {
+                for (PMovieDO movieDO : pMovieDOS) {
+                    pMovieDO.setId(movieDO.getId());
+                    pMovieMapper.updateById(pMovieDO);
+                }
+
+            } else {
+                pMovieMapper.insert(pMovieDO);
+            }
+        }
+        List<PMovieDO> pMovieDOS = pMovieDOLinkedList.subList(0, 7);
+        return pMovieDOS;
+
+    }
+
+    public String hearf(String xsJson) {
+        JSONArray jsonArrayxsJson = JSONObject.parseObject(xsJson).getJSONArray("results");
+        String key = "";
+        if (jsonArrayxsJson.size() > 0) {
+            key = JSONObject.parseObject(jsonArrayxsJson.get(0).toString()).get("key").toString();
+        }
+        return key;
+    }
+
+    public String xsOrTj(String xsJson) {
+
+        JSONArray jsonArrayxsJson = JSONObject.parseObject(xsJson).getJSONArray("results");
+        String xsIds = "";
+        for (Object o : jsonArrayxsJson) {
+            try {
+                String id = JSONObject.parseObject(o.toString()).get("id").toString();
+                String bj = JSONObject.parseObject(o.toString()).get("backdrop_path").toString();
+                String poster_path = JSONObject.parseObject(o.toString()).get("poster_path").toString();
+                String original_title = JSONObject.parseObject(o.toString()).get("original_title").toString();
+                String original_language = JSONObject.parseObject(o.toString()).get("original_language").toString();
+                String overview = JSONObject.parseObject(o.toString()).get("overview").toString();
+                JSONArray genre_ids = JSONObject.parseObject(o.toString()).getJSONArray("genre_ids");
+                String genre_idStr = "";
+                for (Object genre_id : genre_ids) {
+                    genre_idStr += genre_id + ",";
+                }
+                PMovieXstjDO pMovieDO = new PMovieXstjDO();
+                pMovieDO.setMovieid(id);
+                pMovieDO.setYear(id);
+                pMovieDO.setRuntime("");
+                pMovieDO.setImageSrc1(bj);
+                pMovieDO.setImageSrc2(poster_path);
+                pMovieDO.setJj(overview);
+                pMovieDO.setLanguage(original_language);
+                pMovieDO.setTitle(original_title);
+                pMovieDO.setName(original_title);
+                pMovieDO.setMtypeLis(genre_idStr);
+                pMovieDO.setVoteCount(genre_idStr);
+                String setHearf = Methods.generalGet("https://api.themoviedb.org/3/movie/" + id + "/videos?api_key=047cc1d00267ec4a18b7791675dc1566&language=en-US");
+                pMovieDO.setHearf(hearf(setHearf));
+
+                pMovieXstjMapper.insert(pMovieDO);
+                PMovieDO pMovieDO1 = new PMovieDO();
+                pMovieDO1.setMovieid(id);
+                pMovieDO1.setYear(id);
+                pMovieDO1.setRuntime("249");
+                pMovieDO1.setImageSrc1(bj);
+                pMovieDO1.setImageSrc2(poster_path);
+                pMovieDO1.setJj(overview);
+                pMovieDO1.setLanguage(original_language);
+                pMovieDO1.setTitle(original_title);
+                pMovieDO1.setName(original_title);
+                pMovieDO1.setMtypeLis(genre_idStr);
+                pMovieDO1.setVoteCount(genre_idStr);
+                pMovieDO1.setHearf(hearf(setHearf));
+                List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>()
+                        .eq(PMovieDO::getMovieid, id));
+                if (pMovieDOS.size() > 0) {
+                    for (PMovieDO movieDO : pMovieDOS) {
+                        pMovieDO1.setId(movieDO.getId());
+                        pMovieMapper.updateById(pMovieDO1);
+                    }
+                } else {
+                    pMovieMapper.insert(pMovieDO1);
+                }
+                xsIds += id + ",";
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return xsIds;
+    }
+
+    public List<PMovieDO2> getpMovieDOS() {
+        List<Ratings> ratings = ratingsMapper.selectList(new LambdaQueryWrapper<Ratings>().select(Ratings::getMovieid).groupBy(Ratings::getMovieid));
+        List<PMovieDO2> linkedList = new ArrayList<>();
+        for (Ratings rating : ratings) {
+            String movieid = rating.getMovieid();
+            List<Ratings> ratings2 = ratingsMapper.selectList(new LambdaQueryWrapper<Ratings>().eq(Ratings::getMovieid, movieid));
+            int fz = 0;
+            for (Ratings ratings1 : ratings2) {
+                fz += ratings1.getRating();
+            }
+            PMovieDO2 pMovieDO2 = new PMovieDO2();
+            pMovieDO2.setFz(fz / ratings2.size());
+            pMovieDO2.setMovid(movieid);
+            linkedList.add(pMovieDO2);
+        }
+        LinkedList<PMovieDO2> linkedList2 = new LinkedList<>();
+        for (PMovieDO2 pMovieDO2 : linkedList) {
+            Integer fz = pMovieDO2.getFz();
+            if (fz==5){
+                linkedList2.add(pMovieDO2);
+            }
+        }
+        for (PMovieDO2 pMovieDO2 : linkedList) {
+            Integer fz = pMovieDO2.getFz();
+            if (fz==4){
+                linkedList2.add(pMovieDO2);
+            }
+        }
+        for (PMovieDO2 pMovieDO2 : linkedList) {
+            Integer fz = pMovieDO2.getFz();
+            if (fz==3){
+                linkedList2.add(pMovieDO2);
+            }
+        }
+        for (PMovieDO2 pMovieDO2 : linkedList) {
+            Integer fz = pMovieDO2.getFz();
+            if (fz==2){
+                linkedList2.add(pMovieDO2);
+            }
+        }
+        for (PMovieDO2 pMovieDO2 : linkedList) {
+            Integer fz = pMovieDO2.getFz();
+            if (fz==1){
+                linkedList2.add(pMovieDO2);
+            }
+        }
+        List<PMovieDO2> pMovieDO2s = linkedList2.subList(0, 7);
+        return pMovieDO2s;
     }
 
     @Override
@@ -97,13 +281,22 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         User user = getUser(request);
         List<RcdItem> rcdItems = rcdFilm(user);// user or user id
         String titlel = "Movies recommended based on genres you like";
-        List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7"));
-        List<PMovieDO> pMovieDOSrm = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getRouting, "rm").last("limit 7"));
+
+        List<PMovieDO2> pMovieDO2s = getpMovieDOS();
+        List<PMovieDO> pMovieDOS=new LinkedList<>();
+        for (PMovieDO2 pMovieDO2 : pMovieDO2s) {
+            List<PMovieDO> pMovieDOS3 = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getMovieid,pMovieDO2.getMovid()));
+            if (pMovieDOS3.size()>0){
+                pMovieDOS.add(pMovieDOS3.get(0));
+            }
+        }
+
+//        List<PMovieDO> pMovieDOS = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7"));
+//        List<PMovieDO> pMovieDOSrm = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getRouting, "rm").orderByDesc(PMovieDO::getId).last("limit 7"));
         List<PMovieDO> pMovieDOStj = pMovieMapper.selectList(new LambdaQueryWrapper<PMovieDO>().eq(PMovieDO::getFz, "5").last("limit 7,7"));
         if (user != null) {
             Integer id = user.getId();
             String xh = user.getXh();
-
             if (xh != null) {
                 pMovieDOStj.clear();
                 if (rcdItems.size() > 0) {
@@ -155,10 +348,10 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         }
         LinkedList<Object> linkedList = new LinkedList<>();
         linkedList.add(new Entity1(titlel, pMovieDOStj));
+        List<PMovieDO> pMovieDOSrm = week();
         linkedList.add(new Entity1("Weekly Trending", pMovieDOSrm));
         linkedList.add(new Entity1("Top Rated", pMovieDOS));
         return ResBean.success("ok", linkedList);
-
     }
 
     @Override
@@ -170,7 +363,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         IPage iPage = pMovieMapper.selectPage(page, like);
         linkMap.put("size", pMovieDOS.size());
         linkMap.put("records", iPage.getRecords());
-        return ResBean.success("Query Success", linkMap);
+        return ResBean.success("查询成功", linkMap);
 
 
     }
@@ -187,16 +380,37 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
             pMovieDO.setComment(linkedList);
         }
         pMovieDO.setStar("0");
+        pMovieDO.setRuntime("249");
+        try {
+            String[] genres = pMovieDO.getGenres().split(",");
+            String lb="";
+            int i=0;
+            for (String genre : genres) {
+                List<LbDO> lbDOS = lbMapper.selectList(new LambdaQueryWrapper<LbDO>().eq(LbDO::getLid,genre));
+                if (lbDOS.size()>0){
+                    i++;
+                    LbDO lbDO = lbDOS.get(0);
+                    if (i<genres.length){
+                        lb+=lbDO.getName()+"|";
+                    }else {
+                        lb+=lbDO.getName();
+                    }
+                }
+            }
+            pMovieDO.setGenres(lb);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         if (user != null) {
             List<MovieStar> movieStars = movieStarMapper.selectList(new LambdaQueryWrapper<MovieStar>()
                     .eq(MovieStar::getMovie, mid).eq(MovieStar::getCid, user.getId()).orderByDesc(MovieStar::getId));
-
             if (movieStars.size() > 0) {
                 MovieStar movieStar = movieStars.get(0);
                 pMovieDO.setStar(movieStar.getStar());
             }
         }
-        return ResBean.success("Succeed", pMovieDO);
+        return ResBean.success("成功", pMovieDO);
     }
 
     @Override
@@ -276,7 +490,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
             map.put("records", linkedList.subList(i, linkedList.size()));
         }
 //        map.put("records",integers );
-        return ResBean.success("succeed", map);
+        return ResBean.success("成功", map);
     }
 
     @Override
@@ -285,7 +499,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         System.out.println("user = " + user);
         String originName = file.getOriginalFilename();
         if (!originName.endsWith(".png")) {
-            return ResBean.error("Uploading failed. The picture format is incorrect!");
+            return ResBean.error("上传失败,图片格式不正确!");
         }
         String format = formatter.format(now);
         String realPath = address + format;
@@ -306,7 +520,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         System.out.println("newName = " + newName);
         System.out.println("url = " + url);
         url = "http://" + ip + ":" + port + url;
-        return ResBean.success("Succeed", url);
+        return ResBean.success("成功", url);
     }
 
     @Override
@@ -314,6 +528,10 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         LinkedHashMap<Object, Object> linkMap = new LinkedHashMap<>();
         linkMap.put("size", 10);
         List<User> users = userMapper.selectList(null);
+        users.add(new User().setId(307));
+        users.add(new User().setId(414));
+        users.add(new User().setId(639));
+        users.add(new User().setId(639));
         for (User user : users) {
             String picturel = user.getPicturel();
             if (picturel == null) {
@@ -326,7 +544,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 //        307,414,623,639
 
         if (true) {
-            return ResBean.success("Succeed", linkMap);
+            return ResBean.success("成功", linkMap);
         }
 
         User user = getUser(request);
@@ -377,7 +595,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 
 
         linkMap.put("records", users3);
-        return ResBean.success("Succeed！", linkMap);
+        return ResBean.success("成功！", linkMap);
     }
 
     @Override
@@ -409,8 +627,9 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
             linkMap2.put("records", linkedList.subList(i, linkedList.size()));
         }
 
-        return ResBean.success("Succeed", linkMap2);
+        return ResBean.success("成功", linkMap2);
     }
+
     @Override
     public Object getCollect(int currentPage, int pageSize, HttpServletRequest request) {
         User user = getUser(request);
@@ -426,8 +645,9 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
         IPage iPage = collectMapper.selectPage(page, Query);
         map.put("size", list.size());
         map.put("records", iPage.getRecords());
-        return ResBean.success("Succeed",map);
+        return ResBean.success("成功", map);
     }
+
     @Override
     public Object searching(String search) {
         String searchStr = Methods.generalGet("https://api.themoviedb.org/3/search/movie?api_key=047cc1d00267ec4a18b7791675dc1566&query=" + search + "&page=1");
@@ -485,7 +705,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
             linkedList.add(pMovieDO);
         }
 
-        return ResBean.success("Succeed", linkedList);
+        return ResBean.success("成功", linkedList);
     }
 
     @Override
@@ -576,7 +796,7 @@ public class RatingsServiceImpl extends ServiceImpl<RatingsMapper, Ratings> impl
 
     @Override
     public Object getlb(String mid, String uid) {
-        return ResBean.success("Succeed", getcomments2(mid, uid));
+        return ResBean.success("成功", getcomments2(mid, uid));
     }
 
     @Override
